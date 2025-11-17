@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>Top-Down Shooter: Wave/Boss</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <canvas id="game" width="960" height="540"></canvas>
+
+    <div class="hud">
+      <div class="row">
+        <div class="badge">Score: <span id="score">0</span></div>
+        <div class="badge">Time: <span id="time">0.0</span>s</div>
+        <div class="badge">HP: <span id="hp">100</span></div>
+        <div class="badge">Wave: <span id="wave">1</span></div>
+        <div class="badge">Boss: <span id="boss">—</span></div>
+      </div>
+      <div class="help">
+        Move: Arrow Keys • Aim: Mouse • Shoot: Click/Space • R: Restart
+      </div>
+      <button id="startBtn" class="btn">Start</button>
+    </div>
+
+    <script src="game.js"></script>
+  </body>
+</html>
