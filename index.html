@@ -6,36 +6,42 @@
       name="viewport"
       content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
     />
-    <title>Top-Down Shooter: Wave/Boss</title>
+    <title>Malware Defender — Dual Joysticks</title>
     <link rel="stylesheet" href="style.css" />
   </head>
+
   <body>
+    <!-- FULLSCREEN BUTTON (always on top) -->
+    <button id="fsBtn" class="fs-btn">⛶ Fullscreen</button>
+
+    <!-- GAME CANVAS -->
     <canvas id="game" width="960" height="540"></canvas>
 
-    <!-- MOBILE CONTROLS START -->
-    <div id="mobile-controls">
-      <div id="joystick">
-        <div id="stick"></div>
+    <!-- MOBILE CONTROLS: dual joysticks -->
+    <div id="mobile-controls" aria-hidden="true">
+      <div id="joystick-left" class="joystick">
+        <div id="stick-left" class="stick"></div>
       </div>
-      <button id="shootBtn">SHOOT</button>
-    </div>
-    <!-- MOBILE CONTROLS END -->
 
-    <!-- HUD START -->
+      <div id="joystick-right" class="joystick">
+        <div id="stick-right" class="stick"></div>
+      </div>
+    </div>
+
+    <!-- HUD -->
     <div class="hud">
       <div class="row">
-        <div class="badge">Score: <span id="score">0</span></div>
+        <div class="badge">Threats: <span id="score">0</span></div>
         <div class="badge">Time: <span id="time">0.0</span>s</div>
-        <div class="badge">HP: <span id="hp">100</span></div>
+        <div class="badge">Integrity: <span id="hp">100</span>%</div>
         <div class="badge">Wave: <span id="wave">1</span></div>
         <div class="badge">Boss: <span id="boss">—</span></div>
       </div>
       <div class="help">
-        Move: Arrow Keys • Aim: Mouse • Shoot: Click/Space • R: Restart
+        Left joystick: Move • Right joystick: Aim & auto-shoot • R: Restart
       </div>
       <button id="startBtn" class="btn">Start</button>
     </div>
-    <!-- HUD END -->
 
     <script src="game.js"></script>
   </body>
