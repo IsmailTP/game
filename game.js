@@ -1,5 +1,4 @@
 // Top-Down Shooter with Procedural Waves and Boss + MOBILE CONTROLS
-
 (() => {
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
@@ -71,6 +70,21 @@
   canvas.addEventListener('mousedown', () => mouse.down = true);
   addEventListener('mouseup', () => mouse.down = false);
 
+  // Mobile aiming: touch updates mouse.x/mouse.y so player rotates on touch
+  canvas.addEventListener('touchstart', updateAimTouch, { passive: false });
+  canvas.addEventListener('touchmove', updateAimTouch, { passive: false });
+
+  function updateAimTouch(e) {
+    if (!e.touches || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = VW / rect.width;
+    const scaleY = VH / rect.height;
+    mouse.x = (touch.clientX - rect.left) * scaleX;
+    mouse.y = (touch.clientY - rect.top) * scaleY;
+    e.preventDefault();
+  }
+
   // ---------------------------------------------------------------
   // 🔥 MOBILE CONTROLS (Joystick + Shoot Button)
   // ---------------------------------------------------------------
@@ -84,51 +98,55 @@
   const shootBtn = document.getElementById("shootBtn");
 
   function setStickPosition(dx, dy) {
+    // center offset 40 matches CSS; scale for visible movement
     stick.style.left = (40 + dx * 30) + "px";
     stick.style.top = (40 + dy * 30) + "px";
   }
 
-  joy.addEventListener("touchstart", e => {
-    joyActive = true;
-    const rect = joy.getBoundingClientRect();
-    joyStartX = rect.left + rect.width / 2;
-    joyStartY = rect.top + rect.height / 2;
-  });
+  // Defensive: some pages might not have mobile-controls in dev preview — guard null
+  if (joy && stick && shootBtn) {
+    joy.addEventListener("touchstart", e => {
+      joyActive = true;
+      const rect = joy.getBoundingClientRect();
+      joyStartX = rect.left + rect.width / 2;
+      joyStartY = rect.top + rect.height / 2;
+    });
 
-  joy.addEventListener("touchmove", e => {
-    if (!joyActive) return;
-    const touch = e.touches[0];
-    let dx = touch.clientX - joyStartX;
-    let dy = touch.clientY - joyStartY;
-    const dist = Math.hypot(dx, dy);
-    const maxDist = 40;
+    joy.addEventListener("touchmove", e => {
+      if (!joyActive) return;
+      const touch = e.touches[0];
+      let dx = touch.clientX - joyStartX;
+      let dy = touch.clientY - joyStartY;
+      const dist = Math.hypot(dx, dy);
+      const maxDist = 40;
 
-    if (dist > maxDist) {
-      dx = dx / dist * maxDist;
-      dy = dy / dist * maxDist;
-    }
+      if (dist > maxDist) {
+        dx = dx / dist * maxDist;
+        dy = dy / dist * maxDist;
+      }
 
-    joyDX = dx / maxDist;
-    joyDY = dy / maxDist;
+      joyDX = dx / maxDist;
+      joyDY = dy / maxDist;
 
-    setStickPosition(joyDX, joyDY);
-    e.preventDefault();
-  });
+      setStickPosition(joyDX, joyDY);
+      e.preventDefault();
+    });
 
-  joy.addEventListener("touchend", () => {
-    joyActive = false;
-    joyDX = 0;
-    joyDY = 0;
-    setStickPosition(0, 0);
-  });
+    joy.addEventListener("touchend", () => {
+      joyActive = false;
+      joyDX = 0;
+      joyDY = 0;
+      setStickPosition(0, 0);
+    });
 
-  shootBtn.addEventListener("touchstart", () => {
-    mouse.down = true;
-  });
+    shootBtn.addEventListener("touchstart", () => {
+      mouse.down = true;
+    });
 
-  shootBtn.addEventListener("touchend", () => {
-    mouse.down = false;
-  });
+    shootBtn.addEventListener("touchend", () => {
+      mouse.down = false;
+    });
+  }
 
   // ---------------------------------------------------------------
 
@@ -240,6 +258,8 @@
       player.fireCD = player.fireRate;
       const ang = aimAngle(player.x, player.y, mouse.x, mouse.y);
       shootBullet(player.x, player.y, ang, 540, 'p', 18, 4, 1.2);
+      // small sparks (optional)
+      for (let i=0;i<2;i++){ particles.push({x:player.x,y:player.y,ang:ang+Math.PI+randRange(-0.3,0.3),spd:randRange(60,140),life:0.15,color:'#7ef0ff'}); }
     }
 
     // Spawning Waves
@@ -248,17 +268,16 @@
 
     if (S.time >= S.nextBossAt && !S.bossActive) spawnBoss();
 
-    // Enemy Movement, Boss Logic, Bullet Updates, Collisions...
-    // (UNCHANGED — keeping all your original logic)
-
     // Enemies AI
     for (const e of enemies) {
       e.timer += S.dt;
-      const ang = aimAngle(e.x, e.y, player.x, player.y);
       if (e.type === 'chaser' || e.type === 'tank') {
-        e.x += Math.cos(ang) * e.speed * S.dt;
-        e.y += Math.sin(ang) * e.speed * S.dt;
+        const ang = aimAngle(e.x, e.y, player.x, player.y);
+        const sp = e.type === 'chaser' ? e.speed : e.speed * 0.8;
+        e.x += Math.cos(ang) * sp * S.dt;
+        e.y += Math.sin(ang) * sp * S.dt;
       } else if (e.type === 'shooter') {
+        const ang = aimAngle(e.x, e.y, player.x, player.y);
         const perp = ang + Math.PI/2;
         e.x += Math.cos(ang) * 40 * S.dt + Math.cos(perp) * 60 * Math.sin(e.timer*1.7) * S.dt;
         e.y += Math.sin(ang) * 40 * S.dt + Math.sin(perp) * 60 * Math.sin(e.timer*1.7) * S.dt;
@@ -271,7 +290,7 @@
       }
     }
 
-    // Boss movement + phases
+    // Boss logic
     if (boss) {
       boss.timer += S.dt;
       if (boss.y < VH*0.28) boss.y += 60 * S.dt;
@@ -281,7 +300,6 @@
       }
       boss.angle += boss.spin * S.dt;
 
-      // Phases...
       if (boss.phase === 1) {
         if ((boss.timer % 0.12) < S.dt) {
           const n = 8;
@@ -291,8 +309,7 @@
           }
         }
         if (boss.hp < boss.maxHP * 0.66) { boss.phase = 2; boss.timer = 0; }
-      }
-      else if (boss.phase === 2) {
+      } else if (boss.phase === 2) {
         if ((boss.timer % 1.1) < S.dt) {
           for (let i=0;i<12;i++){
             const ang = i * (Math.PI*2/12);
@@ -301,8 +318,7 @@
           for (let i=0;i<3;i++) spawnEnemy();
         }
         if (boss.hp < boss.maxHP * 0.33) { boss.phase = 3; boss.timer = 0; }
-      }
-      else {
+      } else {
         if ((boss.timer % 0.6) < S.dt) {
           const ang = aimAngle(boss.x, boss.y, player.x, player.y);
           for (let i=-2;i<=2;i++){
@@ -315,6 +331,7 @@
         S.score += 300;
         S.bossActive = false;
         S.nextBossAt = Math.floor(S.time) + 30;
+        for (let i=0;i<60;i++) particles.push({x:boss.x,y:boss.y,ang:randRange(0,Math.PI*2),spd:randRange(80,260),life:randRange(0.4,1.0),color:'#ffef7e'});
         boss = null;
         S.wave += 1;
       }
@@ -331,7 +348,7 @@
       }
     }
 
-    // Collisions: bullets vs enemies, boss, player...
+    // Collisions: player bullets vs enemies
     for (let i=enemies.length-1;i>=0;i--) {
       const e = enemies[i];
       for (let j=bullets.length-1;j>=0;j--) {
@@ -340,6 +357,7 @@
         const dx = e.x - b.x, dy = e.y - b.y;
         if (dx*dx + dy*dy < (e.r + b.r)*(e.r + b.r)) {
           e.hp -= b.damage; bullets.splice(j,1);
+          for (let k=0;k<6;k++) particles.push({x:e.x,y:e.y,ang:randRange(0,Math.PI*2),spd:randRange(80,220),life:randRange(0.2,0.6),color:'#ff7ea8'});
           if (e.hp <= 0) {
             enemies.splice(i,1);
             S.score += e.type === 'tank' ? 25 : (e.type === 'shooter' ? 18 : 12);
@@ -349,27 +367,19 @@
       }
     }
 
-    if (boss) {
-      for (let j=bullets.length-1;j>=0;j--) {
-        const b = bullets[j];
-        if (b.from !== 'p') continue;
-        const dx = boss.x - b.x, dy = boss.y - b.y;
-        if (dx*dx + dy*dy < (boss.r + b.r)*(boss.r + b.r)) {
-          boss.hp -= b.damage;
-          bullets.splice(j,1);
-        }
-      }
-    }
-
+    // Player hit by enemy bullets
     for (let j=bullets.length-1;j>=0;j--) {
       const b = bullets[j];
       if (b.from !== 'e') continue;
       const dx = player.x - b.x, dy = player.y - b.y;
       if (dx*dx + dy*dy < (player.r + b.r)*(player.r + b.r)) {
-        player.hp -= b.damage; bullets.splice(j,1);
+        player.hp -= b.damage;
+        bullets.splice(j,1);
+        for (let k=0;k<6;k++) particles.push({x:player.x,y:player.y,ang:randRange(0,Math.PI*2),spd:randRange(80,200),life:0.3,color:'#ff5e7e'});
       }
     }
 
+    // Enemy touch damage
     for (let i=enemies.length-1;i>=0;i--) {
       const e = enemies[i];
       const dx = player.x - e.x, dy = player.y - e.y;
@@ -378,6 +388,7 @@
       }
     }
 
+    // Boss touch damage
     if (boss) {
       const dx = player.x - boss.x, dy = player.y - boss.y;
       if (dx*dx + dy*dy < (player.r + boss.r)*(player.r + boss.r)) {
@@ -385,6 +396,16 @@
       }
     }
 
+    // Particles
+    for (let i=particles.length-1;i>=0;i--) {
+      const p = particles[i];
+      p.life -= S.dt;
+      p.x += Math.cos(p.ang)*p.spd * S.dt;
+      p.y += Math.sin(p.ang)*p.spd * S.dt;
+      if (p.life <= 0) particles.splice(i,1);
+    }
+
+    // Game over
     if (player.hp <= 0 && !S.over) {
       S.over = true;
       S.started = false;
@@ -407,10 +428,9 @@
     }
   };
 
-  function draw() {
-    ctx.clearRect(0,0,VW,VH);
-
-    // Background
+  // Drawing helpers
+  function drawBG() {
+    // subtle grid
     ctx.save();
     ctx.globalAlpha = 0.1;
     ctx.strokeStyle = '#ffffff';
@@ -425,8 +445,9 @@
       ctx.moveTo(0,y); ctx.lineTo(VW,y); ctx.stroke();
     }
     ctx.restore();
+  }
 
-    // Enemies
+  function drawEnemies() {
     for (const e of enemies) {
       ctx.save();
       ctx.translate(e.x, e.y);
@@ -436,29 +457,38 @@
       ctx.fill();
       ctx.restore();
     }
+  }
 
-    // Boss
-    if (boss) {
-      ctx.save();
-      ctx.translate(boss.x, boss.y);
-      ctx.rotate(boss.angle * 0.6);
-      ctx.fillStyle = '#7ea7ff';
+  function drawBoss() {
+    if (!boss) return;
+    ctx.save();
+    ctx.translate(boss.x, boss.y);
+    ctx.rotate(boss.angle * 0.6);
+    ctx.fillStyle = '#7ea7ff';
+    ctx.beginPath();
+    ctx.arc(0,0,boss.r,0,Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = '#c1d3ff';
+    ctx.lineWidth = 4;
+    for (let i=0;i<6;i++){
+      const a = boss.angle + i * (Math.PI*2/6);
       ctx.beginPath();
-      ctx.arc(0,0,boss.r,0,Math.PI*2);
-      ctx.fill();
-      ctx.strokeStyle = '#c1d3ff';
-      ctx.lineWidth = 4;
-      for (let i=0;i<6;i++){
-        const a = boss.angle + i * (Math.PI*2/6);
-        ctx.beginPath();
-        ctx.moveTo(0,0);
-        ctx.lineTo(Math.cos(a)*(boss.r+10), Math.sin(a)*(boss.r+10));
-        ctx.stroke();
-      }
-      ctx.restore();
+      ctx.moveTo(0,0);
+      ctx.lineTo(Math.cos(a)*(boss.r+10), Math.sin(a)*(boss.r+10));
+      ctx.stroke();
     }
+    // boss HP bar
+    const w = Math.min(420, VW - 80), h = 10;
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.fillRect(VW/2 - w/2, 18, w, h);
+    ctx.fillStyle = '#7ef0ff';
+    const pct = Math.max(0,boss.hp/boss.maxHP);
+    ctx.fillRect(VW/2 - w/2, 18, w*pct, h);
+    ctx.restore();
+  }
 
-    // Bullets
+  function drawBullets() {
     for (const b of bullets) {
       ctx.save();
       ctx.translate(b.x, b.y);
@@ -468,10 +498,26 @@
       ctx.fill();
       ctx.restore();
     }
+  }
 
-    // Player
-    ctx.save();
+  function drawParticles() {
+    for (const p of particles) {
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.life*1.8);
+      ctx.fillStyle = p.color || '#ffffff';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function drawPlayer() {
+    // rotation based on mouse (touch also sets mouse)
     const ang = aimAngle(player.x, player.y, mouse.x, mouse.y);
+
+    // ship body
+    ctx.save();
     ctx.translate(player.x, player.y);
     ctx.rotate(ang);
     ctx.shadowColor = '#7ef0ff';
@@ -484,9 +530,56 @@
     ctx.lineTo(-12,10);
     ctx.closePath();
     ctx.fill();
+    // small inner dot
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(-4,0,2,0,Math.PI*2); ctx.fill();
     ctx.restore();
 
-    updateHUD();
+    // HP ring (visible around player)
+    ctx.save();
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.r+8, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.strokeStyle = '#7ef0ff';
+    const pct = Math.max(0, player.hp/100);
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.r+8, -Math.PI/2, -Math.PI/2 + pct*2*Math.PI);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function banner(title, sub) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.fillRect(0, VH*0.28 - 60, VW, 140);
+    ctx.fillStyle = '#fff';
+    ctx.font = '700 40px system-ui, Segoe UI, Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(title, VW/2, VH*0.28);
+    ctx.font = '600 18px system-ui, Segoe UI, Arial';
+    ctx.fillText(sub, VW/2, VH*0.28 + 38);
+    ctx.restore();
+  }
+
+  function drawOverlay() {
+    if (!S.started && !S.over) {
+      banner('Top-Down Malware Shooter', 'Joystick: Move • Drag to Aim • Shoot: Button/Space • Press Start');
+    } else if (S.over) {
+      banner('Game Over', `Score ${Math.floor(S.score)} — Press R / Space to Restart`);
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0,0,VW,VH);
+    drawBG();
+    drawEnemies();
+    drawBoss();
+    drawBullets();
+    drawPlayer();
+    drawParticles();
+    drawOverlay();
   }
 
   function updateHUD() {
@@ -501,5 +594,6 @@
 
   requestAnimationFrame(loop);
 })();
+
 
 
