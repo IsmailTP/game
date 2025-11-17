@@ -12,6 +12,16 @@
   <body>
     <canvas id="game" width="960" height="540"></canvas>
 
+    <!-- MOBILE CONTROLS START -->
+    <div id="mobile-controls">
+      <div id="joystick">
+        <div id="stick"></div>
+      </div>
+      <button id="shootBtn">SHOOT</button>
+    </div>
+    <!-- MOBILE CONTROLS END -->
+
+    <!-- HUD START -->
     <div class="hud">
       <div class="row">
         <div class="badge">Score: <span id="score">0</span></div>
@@ -25,6 +35,7 @@
       </div>
       <button id="startBtn" class="btn">Start</button>
     </div>
+    <!-- HUD END -->
 
     <script src="game.js"></script>
   </body>
