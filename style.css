@@ -76,3 +76,51 @@ html, body {
   backdrop-filter: blur(6px);
 }
 .btn:active { transform: translateX(-50%) scale(0.98); }
+
+/* MOBILE CONTROLS */
+#mobile-controls {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#joystick {
+  position: absolute;
+  bottom: 60px;
+  left: 40px;
+  width: 140px;
+  height: 140px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+#stick {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 50%;
+  top: 40px;
+  left: 40px;
+}
+
+#shootBtn {
+  position: absolute;
+  bottom: 70px;
+  right: 50px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.4);
+  border: 2px solid rgba(255,255,255,0.3);
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  pointer-events: auto;
+  touch-action: none;
+}
