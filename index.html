@@ -49,7 +49,46 @@
       </div>
       <button id="startBtn" class="btn">Start</button>
     </div>
+<!-- Firebase (add this before <script src="game.js"></script>) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+  import {
+    getDatabase, ref, push, set, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+  // --- REPLACE/VERIFY THIS CONFIG (you pasted it already in console) ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyA6MdK6DcJVKxm1LkYQ7Ukny8t-ThxcV8k",
+    authDomain: "malwaregame-777.firebaseapp.com",
+    projectId: "malwaregame-777",
+    storageBucket: "malwaregame-777.appspot.com",
+    messagingSenderId: "584958029606",
+    appId: "1:584958029606:web:701168c7ce4be3f1df1be7",
+    measurementId: "G-WHPETJHDLX",
+    // --- IMPORTANT: databaseURL must match your Realtime DB URL ---
+    // If console gave you a different URL, replace the line below with that value.
+    databaseURL: "https://malwaregame-777-default-rtdb.firebaseio.com"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Push a score to /scores (used by game.js)
+  window.sendScore = async function(name, score){
+    try {
+      const node = ref(db, 'scores');
+      const newRef = push(node);
+      await set(newRef, { name, score, ts: serverTimestamp() });
+      console.log('score sent', name, score);
+      return true;
+    } catch (e) {
+      console.error('sendScore failed', e);
+      return false;
+    }
+  };
+</script>
 
     <script src="game.js"></script>
   </body>
 </html>
+
