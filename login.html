@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <style>
+    body{
+      background:#05060a;color:white;font-family:Inter,Arial;
+      display:flex;align-items:center;justify-content:center;height:100vh;
+    }
+    .box{
+      background:rgba(255,255,255,0.05);
+      padding:30px;border-radius:12px;
+      backdrop-filter:blur(8px);
+      text-align:center;width:300px;
+    }
+    input{
+      width:100%;padding:10px;margin-top:10px;
+      border-radius:8px;border:none;
+    }
+    button{
+      margin-top:15px;padding:10px 16px;
+      width:100%;border:none;border-radius:10px;
+      background:#7ef0ff;color:#000;font-weight:700;cursor:pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="box">
+    <h2>Enter Your Name</h2>
+    <input id="playerName" placeholder="Your name" />
+    <button onclick="startGame()">Play</button>
+  </div>
+
+  <script>
+    function startGame(){
+      const name = document.getElementById("playerName").value.trim();
+      if(name.length < 1) return;
+
+      localStorage.setItem("playerName", name);
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
