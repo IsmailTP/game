@@ -57,7 +57,7 @@
   } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
   // --- REPLACE/VERIFY THIS CONFIG (you pasted it already in console) ---
-  const firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyA6MdK6DcJVKxm1LkYQ7Ukny8t-ThxcV8k",
     authDomain: "malwaregame-777.firebaseapp.com",
     projectId: "malwaregame-777",
@@ -65,10 +65,11 @@
     messagingSenderId: "584958029606",
     appId: "1:584958029606:web:701168c7ce4be3f1df1be7",
     measurementId: "G-WHPETJHDLX",
-    // --- IMPORTANT: databaseURL must match your Realtime DB URL ---
-    // If console gave you a different URL, replace the line below with that value.
-    databaseURL: "https://malwaregame-777-default-rtdb.firebaseio.com"
-  };
+
+    // USE THIS EXACT URL
+    databaseURL: "https://malwaregame-777-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
@@ -91,4 +92,3 @@
     <script src="game.js"></script>
   </body>
 </html>
-
