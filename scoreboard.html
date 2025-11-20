@@ -2,106 +2,103 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Scoreboard — LIVE</title>
+  <title>Top 10 — Live Scoreboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
       background: #05060a;
-      color: #fff;
+      color: white;
       font-family: Inter, Arial;
-      padding: 32px;
       text-align: center;
+      padding: 40px;
     }
-    h1 { font-size: 48px; margin-bottom: 20px; }
+    h1 {
+      font-size: 40px;
+      margin-bottom: 20px;
+    }
     table {
-      width: 90%;
+      width: 80%;
       margin: 0 auto;
       border-collapse: collapse;
       font-size: 24px;
     }
     th, td {
       padding: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(255,255,255,0.2);
     }
     th {
-      font-weight: 700;
-      opacity: 0.8;
+      opacity: 0.7;
     }
   </style>
 </head>
 
 <body>
-  <h1>TOP 10 — LIVE</h1>
 
-  <table id="scoreTable">
-    <thead>
-      <tr>
-        <th>Rank</th>
-        <th>Name</th>
-        <th>Score</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<h1>TOP 10 — LIVE</h1>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-    import {
-      getDatabase,
-      ref,
-      query,
-      orderByChild,
-      limitToLast,
-      onValue
-    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+<table id="scoreTable">
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Name</th>
+      <th>Score</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-    // YOUR CONFIG
-    const firebaseConfig = {
-      apiKey: "AIzaSyA6MdK6DcJVKxm1LkYQ7Ukny8t-ThxcV8k",
-      authDomain: "malwaregame-777.firebaseapp.com",
-      projectId: "malwaregame-777",
-      storageBucket: "malwaregame-777.appspot.com",
-      messagingSenderId: "584958029606",
-      appId: "1:584958029606:web:701168c7ce4be3f1df1be7",
-      measurementId: "G-WHPETJHDLX",
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+  import {
+    getDatabase,
+    ref,
+    query,
+    orderByChild,
+    limitToLast,
+    onValue
+  } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-      // CORRECT DATABASE URL
-      databaseURL: "https://malwaregame-777-default-rtdb.asia-southeast1.firebasedatabase.app"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyA6MdK6DcJVKxm1LkYQ7Ukny8t-ThxcV8k",
+    authDomain: "malwaregame-777.firebaseapp.com",
+    projectId: "malwaregame-777",
+    storageBucket: "malwaregame-777.appspot.com",
+    messagingSenderId: "584958029606",
+    appId: "1:584958029606:web:701168c7ce4be3f1df1be7",
+    measurementId: "G-WHPETJHDLX",
+    databaseURL: "https://malwaregame-777-default-rtdb.asia-southeast1.firebasedatabase.app"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-    const scoresRef = ref(db, "scores");
+  const scoresRef = ref(db, "scores");
 
-    const q = query(scoresRef, orderByChild("score"), limitToLast(10));
+  const q = query(scoresRef, orderByChild("score"), limitToLast(10));
 
-    const tbody = document.querySelector("#scoreTable tbody");
+  const tbody = document.querySelector("#scoreTable tbody");
 
-    onValue(q, (snapshot) => {
-      const data = [];
-
-      snapshot.forEach((child) => {
-        const item = child.val();
-        data.push(item);
-      });
-
-      // Sort highest first
-      data.sort((a, b) => b.score - a.score);
-
-      // Render
-      tbody.innerHTML = "";
-      data.forEach((p, index) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${index + 1}</td>
-          <td>${p.name}</td>
-          <td>${p.score}</td>
-        `;
-        tbody.appendChild(row);
-      });
+  onValue(q, (snapshot) => {
+    const list = [];
+    snapshot.forEach((child) => {
+      list.push(child.val());
     });
-  </script>
+
+    list.sort((a, b) => b.score - a.score);
+
+    tbody.innerHTML = "";
+
+    list.forEach((p, i) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${p.name}</td>
+        <td>${p.score}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  });
+</script>
 
 </body>
 </html>
