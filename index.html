@@ -7,6 +7,7 @@
       content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
     />
     <title>Malware Defender — Dual Joysticks</title>
+    <meta name="screen-orientation" content="landscape">
     <link rel="stylesheet" href="style.css" />
   </head>
 
@@ -16,6 +17,26 @@
     window.location.href = "login.html";
   }
 </script>
+<!-- AUTO FULLSCREEN + AUTO LANDSCAPE -->
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    // Fullscreen request
+    const elem = document.documentElement;
+    if (!document.fullscreenElement) {
+      await elem.requestFullscreen();
+    }
+
+    // Orientation lock
+    if (screen.orientation && screen.orientation.lock) {
+      await screen.orientation.lock("landscape");
+    }
+  } catch (e) {
+    console.log("Orientation lock failed:", e);
+  }
+});
+</script>
+
 
 
     <!-- FULLSCREEN BUTTON (always on top) -->
@@ -112,3 +133,5 @@ const firebaseConfig = {
     <script src="game.js"></script>
   </body>
 </html>
+
+
