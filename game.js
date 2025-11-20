@@ -312,21 +312,36 @@ fsBtn.addEventListener('click', () => {
     for (let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.life-=S.dt; p.x += Math.cos(p.ang)*p.spd*S.dt; p.y += Math.sin(p.ang)*p.spd*S.dt; if (p.life<=0) particles.splice(i,1); }
 
     // game over
-  if (player.hp <= 0 && !S.over){
+ if (player.hp <= 0 && !S.over){
   S.over = true;
   S.started = false;
 
   const name = localStorage.getItem("playerName") || "Unknown";
   const score = Math.floor(S.score);
 
-  let board = JSON.parse(localStorage.getItem("scoreboard") || "[]");
-
-  board.push({ name, score, time: Date.now() });
-
-  board.sort((a,b) => b.score - a.score);
-  board = board.slice(0,10); // keep top 10 only
-
-  localStorage.setItem("scoreboard", JSON.stringify(board));
+  // Try to send to Firebase (window.sendScore created in index.html)
+  if (typeof window.sendScore === 'function'){
+    window.sendScore(name, score).then(ok => {
+      if (!ok) {
+        // fallback to localStorage if Firebase push fails
+        const board = JSON.parse(localStorage.getItem("scoreboard") || "[]");
+        board.push({ name, score, time: Date.now() });
+        board.sort((a,b) => b.score - a.score);
+        localStorage.setItem("scoreboard", JSON.stringify(board.slice(0,10)));
+      }
+    }).catch(() => {
+      const board = JSON.parse(localStorage.getItem("scoreboard") || "[]");
+      board.push({ name, score, time: Date.now() });
+      board.sort((a,b) => b.score - a.score);
+      localStorage.setItem("scoreboard", JSON.stringify(board.slice(0,10)));
+    });
+  } else {
+    // no firebase helper available — use localStorage
+    const board = JSON.parse(localStorage.getItem("scoreboard") || "[]");
+    board.push({ name, score, time: Date.now() });
+    board.sort((a,b) => b.score - a.score);
+    localStorage.setItem("scoreboard", JSON.stringify(board.slice(0,10)));
+  }
 }
 
 
