@@ -5,30 +5,18 @@
   <title>Top 10 — Live Scoreboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body {
-      background: #05060a;
-      color: white;
-      font-family: Inter, Arial;
-      text-align: center;
-      padding: 40px;
+    body{
+      background:#05060a;color:white;font-family:Inter,Arial;
+      padding:40px;text-align:center;
     }
-    h1 {
-      font-size: 40px;
-      margin-bottom: 20px;
+    table{
+      width:60%;margin:auto;border-collapse:collapse;
+      font-size:24px;
     }
-    table {
-      width: 80%;
-      margin: 0 auto;
-      border-collapse: collapse;
-      font-size: 24px;
+    th,td{
+      padding:14px;border-bottom:1px solid rgba(255,255,255,0.1);
     }
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-    }
-    th {
-      opacity: 0.7;
-    }
+    h1{margin-bottom:20px;font-size:40px;}
   </style>
 </head>
 
@@ -36,13 +24,9 @@
 
 <h1>TOP 10 — LIVE</h1>
 
-<table id="scoreTable">
+<table id="boardTable">
   <thead>
-    <tr>
-      <th>Rank</th>
-      <th>Name</th>
-      <th>Score</th>
-    </tr>
+    <tr><th>Rank</th><th>Name</th><th>Score</th></tr>
   </thead>
   <tbody></tbody>
 </table>
@@ -73,13 +57,13 @@
   const db = getDatabase(app);
 
   const scoresRef = ref(db, "scores");
-
   const q = query(scoresRef, orderByChild("score"), limitToLast(10));
 
-  const tbody = document.querySelector("#scoreTable tbody");
+  const tbody = document.querySelector("#boardTable tbody");
 
   onValue(q, (snapshot) => {
     const list = [];
+
     snapshot.forEach((child) => {
       list.push(child.val());
     });
@@ -87,15 +71,13 @@
     list.sort((a, b) => b.score - a.score);
 
     tbody.innerHTML = "";
-
     list.forEach((p, i) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
+      const row = `<tr>
         <td>${i + 1}</td>
         <td>${p.name}</td>
         <td>${p.score}</td>
-      `;
-      tbody.appendChild(row);
+      </tr>`;
+      tbody.innerHTML += row;
     });
   });
 </script>
