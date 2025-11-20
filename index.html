@@ -52,9 +52,16 @@
 <!-- Firebase (add this before <script src="game.js"></script>) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+
   import {
-    getDatabase, ref, push, set, serverTimestamp
+      getDatabase,
+      ref,
+      set,
+      get,
+      serverTimestamp
   } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+
 
   // --- REPLACE/VERIFY THIS CONFIG (you pasted it already in console) ---
 const firebaseConfig = {
@@ -75,18 +82,31 @@ const firebaseConfig = {
   const db = getDatabase(app);
 
   // Push a score to /scores (used by game.js)
-  window.sendScore = async function(name, score){
-    try {
-      const node = ref(db, 'scores');
-      const newRef = push(node);
-      await set(newRef, { name, score, ts: serverTimestamp() });
-      console.log('score sent', name, score);
-      return true;
-    } catch (e) {
-      console.error('sendScore failed', e);
-      return false;
+ window.sendScore = async function(name, score){
+  try {
+    const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, "_"); 
+    const playerRef = ref(db, "scores/" + safeName);
+
+    // Get old score
+    const snapshot = await get(playerRef);
+    const old = snapshot.exists() ? snapshot.val().score : 0;
+
+    // Only update if new score is higher
+    if (score > old) {
+      await set(playerRef, {
+        name: name,
+        score: score,
+        ts: serverTimestamp()
+      });
     }
-  };
+
+    return true;
+  } catch (e) {
+    console.error("sendScore error", e);
+    return false;
+  }
+};
+
 </script>
 
     <script src="game.js"></script>
