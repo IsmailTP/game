@@ -2,34 +2,60 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Scoreboard — Live</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Scoreboard — LIVE</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body{background:#05060a;color:#fff;font-family:Inter,Arial;padding:32px}
-    h1{font-size:48px;text-align:center;margin-bottom:20px}
-    table{width:90%;margin:0 auto;border-collapse:collapse;font-size:28px}
-    th,td{padding:12px;border-bottom:1px solid rgba(255,255,255,0.06);text-align:left}
-    th{font-weight:700;font-size:22px;opacity:0.9}
-    td.rank{width:80px;font-weight:800}
-    .muted{opacity:0.7;font-size:16px;text-align:center;margin-top:8px}
+    body {
+      background: #05060a;
+      color: #fff;
+      font-family: Inter, Arial;
+      padding: 32px;
+      text-align: center;
+    }
+    h1 { font-size: 48px; margin-bottom: 20px; }
+    table {
+      width: 90%;
+      margin: 0 auto;
+      border-collapse: collapse;
+      font-size: 24px;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    th {
+      font-weight: 700;
+      opacity: 0.8;
+    }
   </style>
 </head>
+
 <body>
   <h1>TOP 10 — LIVE</h1>
-  <table id="board">
+
+  <table id="scoreTable">
     <thead>
-      <tr><th>Rank</th><th>Name</th><th>Score</th><th>When</th></tr>
+      <tr>
+        <th>Rank</th>
+        <th>Name</th>
+        <th>Score</th>
+      </tr>
     </thead>
     <tbody></tbody>
   </table>
-  <div class="muted">Connected to Firebase Realtime Database • Updates automatically</div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import {
-      getDatabase, ref, query, orderByChild, limitToLast, onValue
+      getDatabase,
+      ref,
+      query,
+      orderByChild,
+      limitToLast,
+      onValue
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
+    // YOUR CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyA6MdK6DcJVKxm1LkYQ7Ukny8t-ThxcV8k",
       authDomain: "malwaregame-777.firebaseapp.com",
@@ -38,56 +64,44 @@
       messagingSenderId: "584958029606",
       appId: "1:584958029606:web:701168c7ce4be3f1df1be7",
       measurementId: "G-WHPETJHDLX",
-      databaseURL: "https://malwaregame-777-default-rtdb.firebaseio.com"
+
+      // CORRECT DATABASE URL
+      databaseURL: "https://malwaregame-777-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Query top 10 by score (limitToLast + orderByChild('score'))
-    const scoresRef = ref(db, 'scores');
-    const topQuery = query(scoresRef, orderByChild('score'), limitToLast(10));
+    const scoresRef = ref(db, "scores");
 
-    const tbody = document.querySelector('#board tbody');
+    const q = query(scoresRef, orderByChild("score"), limitToLast(10));
 
-    function renderList(items){
-      // items is an array of objects { name, score, ts }
-      // sort descending by score
-      items.sort((a,b) => b.score - a.score);
-      tbody.innerHTML = '';
-      items.forEach((p,i) => {
-        const when = p.ts ? new Date(p.ts).toLocaleString() : '';
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td class="rank">${i+1}</td>
-                        <td>${escapeHtml(p.name || '—')}</td>
-                        <td>${p.score ?? 0}</td>
-                        <td>${when}</td>`;
-        tbody.appendChild(tr);
+    const tbody = document.querySelector("#scoreTable tbody");
+
+    onValue(q, (snapshot) => {
+      const data = [];
+
+      snapshot.forEach((child) => {
+        const item = child.val();
+        data.push(item);
       });
-    }
 
-    // Listen for realtime updates
-    onValue(topQuery, snap => {
-      const arr = [];
-      snap.forEach(child => {
-        const v = child.val();
-        // If timestamp is serverTimestamp(), it may appear as null until resolved,
-        // so keep child's priority/time as fallback.
-        arr.push({ name: v.name, score: v.score, ts: v.ts || null });
+      // Sort highest first
+      data.sort((a, b) => b.score - a.score);
+
+      // Render
+      tbody.innerHTML = "";
+      data.forEach((p, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${p.name}</td>
+          <td>${p.score}</td>
+        `;
+        tbody.appendChild(row);
       });
-      renderList(arr);
-    }, err => {
-      console.error('firebase read err', err);
-      // fallback — try localStorage
-      const local = JSON.parse(localStorage.getItem('scoreboard') || '[]');
-      renderList(local);
     });
-
-    // small helper
-    function escapeHtml(s){
-      return (s+'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    }
   </script>
+
 </body>
 </html>
-
