@@ -11,6 +11,13 @@
   </head>
 
   <body>
+    <script>
+  if(!localStorage.getItem("playerName")){
+    window.location.href = "login.html";
+  }
+</script>
+
+
     <!-- FULLSCREEN BUTTON (always on top) -->
     <button id="fsBtn" class="fs-btn">⛶ Fullscreen</button>
 
