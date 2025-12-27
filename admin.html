@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin - Score Management</title>
+  <style>
+    body { background: #0a0b10; color: white; font-family: sans-serif; padding: 20px; }
+    .score-card { 
+      background: #161b22; border: 1px solid #30363d; 
+      padding: 15px; margin: 10px 0; display: flex; justify-content: space-between; 
+      align-items: center; border-radius: 8px;
+    }
+    button { cursor: pointer; padding: 8px 12px; border: none; border-radius: 4px; font-weight: bold; }
+    .del-btn { background: #ff5e7e; color: white; }
+    .del-btn:hover { background: #ff2b56; }
+    #auth-overlay { 
+        position: fixed; inset: 0; background: #000; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; 
+    }
+    input { padding: 10px; border-radius: 5px; border: 1px solid #444; background: #222; color: #fff; }
+  </style>
+</head>
+<body>
+
+<div id="auth-overlay">
+    <h2>Admin Access</h2>
+    <input type="password" id="adminPass" placeholder="Enter Admin Password">
+    <button onclick="checkPass()" style="margin-top:10px; background:#7ef0ff">Login</button>
+</div>
+
+<h1>System Administrator - Scoreboard Control</h1>
+<div id="scoreList">Loading data...</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+  import { getDatabase, ref, onValue, remove, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA6MdK6DcJVKxm1LkYQ7Ukny8t-ThxcV8k",
+    authDomain: "malwaregame-777.firebaseapp.com",
+    projectId: "malwaregame-777",
+    databaseURL: "https://malwaregame-777-default-rtdb.asia-southeast1.firebasedatabase.app"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Simple Password Logic
+  window.checkPass = function() {
+      const pass = document.getElementById('adminPass').value;
+      if (pass === "MALWARE2024") { // <--- CHANGE YOUR PASSWORD HERE
+          document.getElementById('auth-overlay').style.display = 'none';
+          loadAdminData();
+      } else {
+          alert("Unauthorized Access Detected.");
+      }
+  }
+
+  function loadAdminData() {
+    const scoresRef = ref(db, "scores");
+    onValue(scoresRef, (snapshot) => {
+      const data = snapshot.val();
+      const listDiv = document.getElementById("scoreList");
+      listDiv.innerHTML = "";
+
+      if (!data) { listDiv.innerHTML = "No scores found."; return; }
+
+      Object.keys(data).forEach(key => {
+        const item = data[key];
+        const card = document.createElement("div");
+        card.className = "score-card";
+        card.innerHTML = `
+          <div>
+            <strong>${item.name}</strong> - ${item.score} pts
+            <br><small style="color:#888">${key}</small>
+          </div>
+          <div>
+            <button class="del-btn" onclick="deleteScore('${key}')">DELETE</button>
+          </div>
+        `;
+        listDiv.appendChild(card);
+      });
+    });
+  }
+
+  window.deleteScore = function(key) {
+      if(confirm("Permanently delete " + key + "?")) {
+          remove(ref(db, "scores/" + key));
+      }
+  }
+</script>
+</body>
+</html>
