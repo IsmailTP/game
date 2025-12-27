@@ -1,46 +1,182 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Access — RED ALERT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body{
-      background:#05060a;color:white;font-family:Inter,Arial;
-      display:flex;align-items:center;justify-content:center;height:100vh;
+    :root {
+      --bg: #05050a;
+      --accent: #ff003c;
+      --border: rgba(255, 0, 60, 0.3);
+      --glass: rgba(255, 0, 60, 0.05);
     }
-    .box{
-      background:rgba(255,255,255,0.05);
-      padding:30px;border-radius:12px;
-      backdrop-filter:blur(8px);
-      text-align:center;width:300px;
+
+    * { box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 50% 50%, rgba(255, 0, 60, 0.1), transparent 80%),
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 100% 100%, 40px 40px, 40px 40px;
+      color: white;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
-    input{
-      width:100%;padding:10px;margin-top:10px;
-      border-radius:8px;border:none;
+
+    /* Container Box */
+    .login-box {
+      background: var(--glass);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      padding: 40px;
+      border-radius: 15px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 0, 60, 0.05);
+      animation: fadeIn 0.8s ease-out;
     }
-    button{
-      margin-top:15px;padding:10px 16px;
-      width:100%;border:none;border-radius:10px;
-      background:#7ef0ff;color:#000;font-weight:700;cursor:pointer;
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      font-family: 'Orbitron', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      color: var(--accent);
+      margin-bottom: 10px;
+      font-size: 22px;
+    }
+
+    p {
+      font-size: 12px;
+      opacity: 0.6;
+      margin-bottom: 30px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Input Field */
+    .input-container {
+      position: relative;
+      margin-bottom: 25px;
+    }
+
+    input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+      padding: 15px;
+      border-radius: 8px;
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 15px rgba(255, 0, 60, 0.3);
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Start Button */
+    .play-btn {
+      width: 100%;
+      padding: 15px;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 0 20px rgba(255, 0, 60, 0.4);
+    }
+
+    .play-btn:hover {
+      background: #ff3366;
+      box-shadow: 0 0 35px var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .play-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Footer Text */
+    .footer {
+      margin-top: 25px;
+      font-size: 10px;
+      opacity: 0.4;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
   </style>
 </head>
-
 <body>
-  <div class="box">
-    <h2>Enter Your Name</h2>
-    <input id="playerName" placeholder="Your name" />
-    <button onclick="startGame()">Play</button>
+
+  <div class="login-box">
+    <h2>Access Control</h2>
+    <p>Identify yourself, Defender</p>
+
+    <div class="input-container">
+      <input type="text" id="playerName" maxlength="12" placeholder="ID: Defender_1" autocomplete="off">
+    </div>
+
+    <button class="play-btn" onclick="startGame()">Initialize</button>
+
+    <div class="footer">
+      Neural Network Status: Critical
+    </div>
   </div>
 
   <script>
-    function startGame(){
-      const name = document.getElementById("playerName").value.trim();
-      if(name.length < 1) return;
+    function startGame() {
+      const nameInput = document.getElementById("playerName");
+      const name = nameInput.value.trim();
 
+      if (name.length < 2) {
+        nameInput.style.borderColor = "red";
+        alert("Identification required (min 2 chars)");
+        return;
+      }
+
+      // Save to localStorage for game use
       localStorage.setItem("playerName", name);
+      
+      // Redirect to game
       window.location.href = "index.html";
     }
+
+    // Allow Enter key to submit
+    document.getElementById("playerName").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") startGame();
+    });
   </script>
+
 </body>
 </html>
