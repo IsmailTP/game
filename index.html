@@ -2,136 +2,118 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
-    />
-    <title>Malware Defender — Dual Joysticks</title>
-    <meta name="screen-orientation" content="landscape">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+    <title>Malware Defender — OVERDRIVE</title>
+    <!-- Sci-Fi Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css" />
   </head>
 
   <body>
+    <!-- Auth Redirect -->
     <script>
-  if(!localStorage.getItem("playerName")){
-    window.location.href = "login.html";
-  }
-</script>
-<!-- AUTO FULLSCREEN + AUTO LANDSCAPE -->
-<script>
-document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    // Fullscreen request
-    const elem = document.documentElement;
-    if (!document.fullscreenElement) {
-      await elem.requestFullscreen();
-    }
+      if(!localStorage.getItem("playerName")){
+        window.location.href = "login.html";
+      }
+    </script>
 
-    // Orientation lock
-    if (screen.orientation && screen.orientation.lock) {
-      await screen.orientation.lock("landscape");
-    }
-  } catch (e) {
-    console.log("Orientation lock failed:", e);
-  }
-});
-</script>
-
-
-
-    <!-- FULLSCREEN BUTTON (always on top) -->
-    <button id="fsBtn" class="fs-btn">⛶ Fullscreen</button>
+    <!-- UI LAYER: FULLSCREEN -->
+    <button id="fsBtn" class="fs-btn">⛶ FULLSCREEN</button>
 
     <!-- GAME CANVAS -->
-    <canvas id="game" width="960" height="540"></canvas>
+    <canvas id="game"></canvas>
 
-    <!-- MOBILE CONTROLS: dual joysticks -->
+    <!-- UI LAYER: DUAL JOYSTICKS (MOBILE) -->
     <div id="mobile-controls" aria-hidden="true">
       <div id="joystick-left" class="joystick">
+        <div class="joy-label">MOVE</div>
         <div id="stick-left" class="stick"></div>
       </div>
-
       <div id="joystick-right" class="joystick">
+        <div class="joy-label">FIRE</div>
         <div id="stick-right" class="stick"></div>
       </div>
     </div>
 
-    <!-- HUD -->
-    <div class="hud">
-      <div class="row">
-        <div class="badge">Threats: <span id="score">0</span></div>
-        <div class="badge">Time: <span id="time">0.0</span>s</div>
-        <div class="badge">Integrity: <span id="hp">100</span>%</div>
-        <div class="badge">Wave: <span id="wave">1</span></div>
-        <div class="badge">Boss: <span id="boss">—</span></div>
+    <!-- UI LAYER: TOP HUD -->
+    <div class="hud-top">
+      <div class="stat-group">
+        <div class="label">SYSTEM INTEGRITY</div>
+        <div class="hp-bar-container">
+            <div id="hp-fill" class="hp-bar-fill"></div>
+        </div>
       </div>
-      <div class="help">
-        Left joystick: Move • Right joystick: Aim & auto-shoot • R: Restart
+      
+      <div class="stat-group center">
+        <div class="badge">THREATS: <span id="score">0</span></div>
+        <div class="badge">WAVE: <span id="wave">1</span></div>
       </div>
-      <button id="startBtn" class="btn">Start</button>
+
+      <div class="stat-group right">
+        <div class="label">UPTIME</div>
+        <div id="time" class="timer">0.0s</div>
+      </div>
     </div>
-<!-- Firebase (add this before <script src="game.js"></script>) -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 
-  import {
-      getDatabase,
-      ref,
-      set,
-      get,
-      serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+    <!-- UI LAYER: START OVERLAY -->
+    <div id="start-screen" class="overlay">
+        <h1 class="glitch" data-text="OVERDRIVE">OVERDRIVE</h1>
+        <p class="sub-text">MALWARE DEFENDER v3.0 [HIGH_SPEED]</p>
+        <button id="startBtn" class="btn-main">BOOT DEFENSE</button>
+    </div>
 
+    <!-- UI LAYER: DEATH OVERLAY -->
+    <div id="death-screen" class="overlay" style="display: none;">
+        <h2 class="alert-text">KERNEL PANIC: SYSTEM DIED</h2>
+        <div class="final-stats">
+            <p>THREATS NEUTRALIZED: <span id="final-score">0</span></p>
+            <p>UPTIME: <span id="final-time">0</span>s</p>
+        </div>
+        <button id="retryBtn" class="btn-main">FORCE REBOOT</button>
+    </div>
 
+    <!-- FIREBASE MODULE -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+      import { getDatabase, ref, set, get, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-  // --- REPLACE/VERIFY THIS CONFIG (you pasted it already in console) ---
-const firebaseConfig = {
-    apiKey: "AIzaSyA6MdK6DcJVKxm1LkYQ7Ukny8t-ThxcV8k",
-    authDomain: "malwaregame-777.firebaseapp.com",
-    projectId: "malwaregame-777",
-    storageBucket: "malwaregame-777.appspot.com",
-    messagingSenderId: "584958029606",
-    appId: "1:584958029606:web:701168c7ce4be3f1df1be7",
-    measurementId: "G-WHPETJHDLX",
+      const firebaseConfig = {
+        apiKey: "AIzaSyA6MdK6DcJVKxm1LkYQ7Ukny8t-ThxcV8k",
+        authDomain: "malwaregame-777.firebaseapp.com",
+        projectId: "malwaregame-777",
+        storageBucket: "malwaregame-777.appspot.com",
+        messagingSenderId: "584958029606",
+        appId: "1:584958029606:web:701168c7ce4be3f1df1be7",
+        databaseURL: "https://malwaregame-777-default-rtdb.asia-southeast1.firebasedatabase.app"
+      };
 
-    // USE THIS EXACT URL
-    databaseURL: "https://malwaregame-777-default-rtdb.asia-southeast1.firebasedatabase.app"
-};
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
 
+      window.sendScore = async function(name, score, check){
+        if (check !== (score * 3) + 7) return false;
+        try {
+          const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, "_"); 
+          const playerRef = ref(db, "scores/" + safeName);
+          const snapshot = await get(playerRef);
+          const oldScore = snapshot.exists() ? snapshot.val().score : 0;
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  // Push a score to /scores (used by game.js)
- window.sendScore = async function(name, score){
-  try {
-    const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, "_"); 
-    const playerRef = ref(db, "scores/" + safeName);
-
-    // Get old score
-    const snapshot = await get(playerRef);
-    const old = snapshot.exists() ? snapshot.val().score : 0;
-
-    // Only update if new score is higher
-    if (score > old) {
-      await set(playerRef, {
-        name: name,
-        score: score,
-        ts: serverTimestamp()
-      });
-    }
-
-    return true;
-  } catch (e) {
-    console.error("sendScore error", e);
-    return false;
-  }
-};
-
-</script>
+          if (score > oldScore) {
+            await set(playerRef, {
+              name: name,
+              score: score,
+              timestamp: serverTimestamp()
+            });
+          }
+          return true;
+        } catch (e) {
+          return false;
+        }
+      };
+    </script>
 
     <script src="game.js"></script>
   </body>
 </html>
-
-
