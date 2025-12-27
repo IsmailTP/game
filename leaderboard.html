@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Threat Registry — Leaderboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050000;
+      --accent: #ff003c;
+      --gold: #ff4d4d; /* Bright red for #1 */
+      --silver: #a30026;
+      --bronze: #6b0019;
+      --glass: rgba(255, 0, 60, 0.03);
+      --border: rgba(255, 0, 60, 0.2);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      /* Cyber-Terminal Background */
+      background-image: 
+        radial-gradient(circle at 50% -20%, rgba(255, 0, 60, 0.15), transparent 60%),
+        linear-gradient(rgba(255, 0, 60, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 0, 60, 0.05) 1px, transparent 1px);
+      background-size: 100% 100%, 30px 30px, 30px 30px;
+      color: white;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.2rem, 6vw, 2.5rem);
+      text-transform: uppercase;
+      letter-spacing: 6px;
+      margin: 50px 0 5px 0;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(255, 0, 60, 0.6);
+    }
+
+    .subtitle {
+      opacity: 0.5;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      margin-bottom: 40px;
+    }
+
+    .board-container {
+      width: 100%;
+      max-width: 600px;
+      background: var(--glass);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+      animation: emerge 0.8s ease-out;
+    }
+
+    @keyframes emerge {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .header-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 140px;
+      padding: 15px 30px;
+      background: rgba(255, 0, 60, 0.1);
+      border-bottom: 2px solid var(--border);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 80px 1fr 140px;
+      align-items: center;
+      padding: 18px 30px;
+      border-bottom: 1px solid rgba(255, 0, 60, 0.05);
+      transition: background 0.3s;
+      animation: slideIn 0.5s ease forwards;
+      opacity: 0;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .row:hover { background: rgba(255, 0, 60, 0.08); }
+    .row:last-child { border-bottom: none; }
+
+    .rank {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Top 3 Highlighting */
+    .row:nth-child(2) .rank { color: var(--gold); font-size: 24px; }
+    .row:nth-child(3) .rank { color: var(--silver); font-size: 20px; }
+    .row:nth-child(4) .rank { color: var(--bronze); font-size: 19px; }
+
+    .name {
+      font-weight: 600;
+      font-size: 18px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #eee;
+    }
+
+    .score-val {
+      font-family: 'Orbitron', sans-serif;
+      text-align: right;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 20px;
+      text-shadow: 0 0 10px rgba(255, 0, 60, 0.3);
+    }
+
+    /* Loading Spinner */
+    #loader {
+      margin-top: 80px;
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 500px) {
+      .row, .header-row { grid-template-columns: 60px 1fr 100px; padding: 15px; }
+      .name { font-size: 16px; }
+      .score-val { font-size: 17px; }
+      h1 { letter-spacing: 3px; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Live Registry</h1>
+  <div class="subtitle">Neural Network Protection Standings</div>
+
+  <div id="loader"></div>
+  
+  <div class="board-container" id="leaderboard" style="display: none;">
+    <div class="header-row">
+      <div>Rank</div>
+      <div>Defender</div>
+      <div style="text-align: right;">Score</div>
+    </div>
+    <div id="entries"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      query,
+      orderByChild,
+      limitToLast,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA6MdK6DcJVKxm1LkYQ7Ukny8t-ThxcV8k",
+      authDomain: "malwaregame-777.firebaseapp.com",
+      projectId: "malwaregame-777",
+      storageBucket: "malwaregame-777.appspot.com",
+      messagingSenderId: "584958029606",
+      appId: "1:584958029606:web:701168c7ce4be3f1df1be7",
+      measurementId: "G-WHPETJHDLX",
+      databaseURL: "https://malwaregame-777-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const scoresRef = ref(db, "scores");
+    const q = query(scoresRef, orderByChild("score"), limitToLast(10));
+
+    const entriesDiv = document.getElementById("entries");
+    const loader = document.getElementById("loader");
+    const container = document.getElementById("leaderboard");
+
+    onValue(q, (snapshot) => {
+      const list = [];
+      snapshot.forEach((child) => {
+        list.push(child.val());
+      });
+
+      // Descending order (highest first)
+      list.sort((a, b) => b.score - a.score);
+
+      loader.style.display = "none";
+      container.style.display = "block";
+      entriesDiv.innerHTML = "";
+
+      list.forEach((p, i) => {
+        const row = document.createElement("div");
+        row.className = "row";
+        row.style.animationDelay = (i * 0.08) + "s";
+
+        row.innerHTML = `
+          <div class="rank">#${i + 1}</div>
+          <div class="name">${escape(p.name)}</div>
+          <div class="score-val">${Number(p.score).toLocaleString()}</div>
+        `;
+        entriesDiv.appendChild(row);
+      });
+    });
+
+    // Security: Escape HTML to prevent XSS
+    function escape(str) {
+      const p = document.createElement('p');
+      p.textContent = str;
+      return p.innerHTML;
+    }
+  </script>
+</body>
+</html>
