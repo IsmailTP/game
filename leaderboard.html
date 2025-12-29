@@ -10,23 +10,23 @@
   <style>
     :root {
       --bg: #050000;
-      --accent: #ff003c;
-      --gold: #ff4d4d; /* Bright red for #1 */
-      --silver: #a30026;
-      --bronze: #6b0019;
-      --glass: rgba(255, 0, 60, 0.03);
-      --border: rgba(255, 0, 60, 0.2);
+      --accent: #ff003c; /* Cyber Red */
+      --gold: #ffd700;   /* Gold */
+      --silver: #c0c0c0; /* Silver */
+      --bronze: #cd7f32; /* Bronze */
+      --glass: rgba(20, 0, 5, 0.6);
+      --border: rgba(255, 0, 60, 0.3);
     }
 
     * { box-sizing: border-box; }
+    
     body {
       background: var(--bg);
-      /* Cyber-Terminal Background */
+      /* Cyber-Grid Background */
       background-image: 
-        radial-gradient(circle at 50% -20%, rgba(255, 0, 60, 0.15), transparent 60%),
-        linear-gradient(rgba(255, 0, 60, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 0, 60, 0.05) 1px, transparent 1px);
-      background-size: 100% 100%, 30px 30px, 30px 30px;
+        linear-gradient(rgba(255, 0, 60, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 0, 60, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
       color: white;
       font-family: 'Inter', sans-serif;
       margin: 0;
@@ -37,94 +37,100 @@
       padding: 20px;
     }
 
+    /* --- TYPOGRAPHY --- */
     h1 {
       font-family: 'Orbitron', sans-serif;
-      font-size: clamp(1.2rem, 6vw, 2.5rem);
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
       text-transform: uppercase;
-      letter-spacing: 6px;
-      margin: 50px 0 5px 0;
-      color: var(--accent);
-      text-shadow: 0 0 20px rgba(255, 0, 60, 0.6);
+      letter-spacing: 4px;
+      margin: 40px 0 5px 0;
+      color: white;
+      text-shadow: 2px 2px 0px var(--accent);
     }
 
     .subtitle {
-      opacity: 0.5;
-      font-size: 11px;
+      color: var(--accent);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
       text-transform: uppercase;
-      letter-spacing: 4px;
+      letter-spacing: 3px;
       margin-bottom: 40px;
+      opacity: 0.8;
     }
 
+    /* --- CONTAINER --- */
     .board-container {
       width: 100%;
       max-width: 600px;
       background: var(--glass);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(255, 0, 60, 0.1);
+      border-radius: 4px; 
       overflow: hidden;
-      box-shadow: 0 40px 100px rgba(0,0,0,0.8);
-      animation: emerge 0.8s ease-out;
+      animation: fadeIn 0.8s ease-out;
     }
 
-    @keyframes emerge {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
+    /* --- TABLE STRUCTURE --- */
     .header-row {
       display: grid;
-      grid-template-columns: 80px 1fr 140px;
-      padding: 15px 30px;
-      background: rgba(255, 0, 60, 0.1);
-      border-bottom: 2px solid var(--border);
-      font-size: 10px;
+      grid-template-columns: 70px 1fr 120px;
+      padding: 15px 25px;
+      background: rgba(255, 0, 60, 0.15);
+      border-bottom: 1px solid var(--border);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 2px;
-      font-weight: 700;
+      letter-spacing: 1px;
       color: var(--accent);
     }
 
     .row {
       display: grid;
-      grid-template-columns: 80px 1fr 140px;
+      grid-template-columns: 70px 1fr 120px;
       align-items: center;
-      padding: 18px 30px;
-      border-bottom: 1px solid rgba(255, 0, 60, 0.05);
-      transition: background 0.3s;
-      animation: slideIn 0.5s ease forwards;
-      opacity: 0;
+      padding: 15px 25px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.2s;
+      position: relative;
     }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(-20px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    .row:hover { background: rgba(255, 0, 60, 0.08); }
+    
+    .row:hover { background: rgba(255, 0, 60, 0.05); }
     .row:last-child { border-bottom: none; }
 
+    /* --- DATA COLUMNS --- */
     .rank {
       font-family: 'Orbitron', sans-serif;
       font-weight: 700;
-      font-size: 18px;
-      color: rgba(255, 255, 255, 0.2);
+      font-size: 20px;
+      color: #555;
     }
 
-    /* Top 3 Highlighting */
-    .row:nth-child(2) .rank { color: var(--gold); font-size: 24px; }
-    .row:nth-child(3) .rank { color: var(--silver); font-size: 20px; }
-    .row:nth-child(4) .rank { color: var(--bronze); font-size: 19px; }
+    .player-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
 
     .name {
       font-weight: 600;
-      font-size: 18px;
-      letter-spacing: 0.5px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 16px;
       color: #eee;
+      letter-spacing: 0.5px;
+    }
+
+    .threat-title {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-top: 4px;
+      font-family: 'Orbitron', sans-serif;
     }
 
     .score-val {
@@ -132,42 +138,95 @@
       text-align: right;
       color: var(--accent);
       font-weight: 700;
-      font-size: 20px;
-      text-shadow: 0 0 10px rgba(255, 0, 60, 0.3);
+      font-size: 18px;
     }
 
-    /* Loading Spinner */
+    /* --- GLITCH ANIMATION KEYFRAMES --- */
+    @keyframes glitch-anim {
+      0% { transform: translate(0); }
+      20% { transform: translate(-2px, 1px); }
+      40% { transform: translate(-1px, -1px); }
+      60% { transform: translate(1px, 1px); }
+      80% { transform: translate(1px, -1px); }
+      100% { transform: translate(0); }
+    }
+
+    /* --- SPECIAL STYLING FOR TOP 3 --- */
+    
+    /* #1 Gold - Aggressive Glitch */
+    .row:nth-child(1) {
+      background: linear-gradient(90deg, rgba(255, 215, 0, 0.05), transparent);
+      border-left: 3px solid var(--gold);
+    }
+    .row:nth-child(1) .rank { color: var(--gold); font-size: 24px; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+    .row:nth-child(1) .score-val { color: var(--gold); }
+    .row:nth-child(1) .name {
+        color: #fff;
+        text-shadow: 2px 0 var(--gold), -2px 0 red;
+        animation: glitch-anim 0.25s infinite; /* Fast glitch */
+    }
+    
+    /* #2 Silver - Medium Glitch */
+    .row:nth-child(2) {
+      border-left: 3px solid var(--silver);
+    }
+    .row:nth-child(2) .rank { color: var(--silver); font-size: 22px; }
+    .row:nth-child(2) .name {
+        color: #fff;
+        text-shadow: 2px 0 var(--silver), -2px 0 blue;
+        animation: glitch-anim 0.4s infinite; /* Medium glitch */
+    }
+
+    /* #3 Bronze - Slow Glitch */
+    .row:nth-child(3) {
+      border-left: 3px solid var(--bronze);
+    }
+    .row:nth-child(3) .rank { color: var(--bronze); font-size: 20px; }
+    .row:nth-child(3) .name {
+        color: #fff;
+        text-shadow: 2px 0 var(--bronze), -2px 0 purple;
+        animation: glitch-anim 0.6s infinite; /* Slow glitch */
+    }
+
+    /* Keep hover glitch for everyone else (Rank 4+) */
+    .row:nth-child(n+4):hover .name {
+      color: #fff;
+      text-shadow: 2px 0 var(--accent), -2px 0 cyan;
+      animation: glitch-anim 0.3s infinite;
+    }
+
+
+    /* --- LOADER --- */
     #loader {
-      margin-top: 80px;
+      margin-top: 60px;
       width: 40px;
       height: 40px;
-      border: 3px solid var(--border);
+      border: 2px solid var(--border);
       border-top-color: var(--accent);
       border-radius: 50%;
-      animation: spin 1s linear infinite;
+      animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     @media (max-width: 500px) {
-      .row, .header-row { grid-template-columns: 60px 1fr 100px; padding: 15px; }
-      .name { font-size: 16px; }
-      .score-val { font-size: 17px; }
-      h1 { letter-spacing: 3px; }
+      .row, .header-row { grid-template-columns: 50px 1fr 90px; padding: 15px; }
+      .name { font-size: 14px; }
+      .score-val { font-size: 15px; }
     }
   </style>
 </head>
 <body>
 
-  <h1>Live Scoreboard</h1>
-  <div class="subtitle">Neural Network Protection Standings</div>
+  <h1>Threat Registry</h1>
+  <div class="subtitle">Global Neural Network Status</div>
 
   <div id="loader"></div>
   
   <div class="board-container" id="leaderboard" style="display: none;">
     <div class="header-row">
-      <div>Rank</div>
-      <div>Defender</div>
-      <div style="text-align: right;">Score</div>
+      <div>#</div>
+      <div>Operative</div>
+      <div style="text-align: right;">Points</div>
     </div>
     <div id="entries"></div>
   </div>
@@ -198,7 +257,7 @@
     const db = getDatabase(app);
 
     const scoresRef = ref(db, "scores");
-    const q = query(scoresRef, orderByChild("score"), limitToLast(10));
+    const q = query(scoresRef, orderByChild("score"), limitToLast(20));
 
     const entriesDiv = document.getElementById("entries");
     const loader = document.getElementById("loader");
@@ -210,34 +269,58 @@
         list.push(child.val());
       });
 
-      // Descending order (highest first)
       list.sort((a, b) => b.score - a.score);
+      const top10 = list.slice(0, 10);
 
       loader.style.display = "none";
       container.style.display = "block";
       entriesDiv.innerHTML = "";
 
-      list.forEach((p, i) => {
+      top10.forEach((p, i) => {
         const row = document.createElement("div");
         row.className = "row";
-        row.style.animationDelay = (i * 0.08) + "s";
+        
+        let rankDisplay = `#${i + 1}`;
+        if (i === 0) rankDisplay = "👑";
+
+        let titleText = "SCRIPT KIDDIE";
+        let titleColor = "#666"; 
+
+        if (i === 0) {
+          titleText = "APEX PREDATOR";
+          titleColor = "var(--gold)";
+        } else if (i === 1) {
+          titleText = "SYSTEM OVERLORD";
+          titleColor = "var(--silver)";
+        } else if (i === 2) {
+          titleText = "ELITE HACKER";
+          titleColor = "var(--bronze)";
+        } else if (i < 5) {
+          titleText = "BLACK HAT";
+          titleColor = "#ff003c";
+        } else {
+            titleText = "GREY HAT";
+            titleColor = "#aaa";
+        }
 
         row.innerHTML = `
-          <div class="rank">#${i + 1}</div>
-          <div class="name">${escape(p.name)}</div>
+          <div class="rank">${rankDisplay}</div>
+          <div class="player-info">
+            <div class="name">${escape(p.name)}</div>
+            <div class="threat-title" style="color: ${titleColor}">${titleText}</div>
+          </div>
           <div class="score-val">${Number(p.score).toLocaleString()}</div>
         `;
         entriesDiv.appendChild(row);
       });
     });
 
-    // Security: Escape HTML to prevent XSS
     function escape(str) {
+      if (!str) return "Unknown";
       const p = document.createElement('p');
       p.textContent = str;
       return p.innerHTML;
     }
   </script>
 </body>
-
 </html>
