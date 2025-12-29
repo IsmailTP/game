@@ -115,10 +115,10 @@
 
   let allData = []; // Store data locally for filtering
 
-  // --- AUTHENTICATION ---
+  
   window.checkPass = function() {
       const pass = document.getElementById('adminPass').value;
-      if (pass === "MALWARE2024") { 
+      if (pass === "pass=pass") { 
           document.getElementById('auth-overlay').style.display = 'none';
           loadAdminData();
       } else {
