@@ -1,4 +1,6 @@
-// Malware Defender — OVERDRIVE EDITION [V3.1 FINAL - MOBILE OPTIMIZED]
+
+
+// Malware Defender — OVERDRIVE EDITION [V3.3 - ADVANCED ENEMY AI]
 (() => {
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
@@ -16,7 +18,7 @@
     const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
     VW = window.innerWidth; 
     VH = window.innerHeight;
-    isMobile = VW < 768; // Standard tablet/phone breakpoint
+    isMobile = VW < 768; 
     
     canvas.width = VW * dpr; 
     canvas.height = VH * dpr;
@@ -44,12 +46,12 @@
     killCount: 0, shake: 0, flash: 0, nextBossScore: 1500 
   };
 
-  const player = { x: 0, y: 0, r: 16, speed: 400, hp: 100, maxHP: 100, fireCD: 0, fireRate: 0.09 };
+  const player = { x: 0, y: 0, r: 16, angle: -Math.PI/2, speed: 400, hp: 100, maxHP: 100, fireCD: 0, fireRate: 0.09 };
   let bullets = [], enemies = [], particles = [], drops = [], bosses = [];
 
   const COLORS = { neon: '#ff003c', dark: '#0a0102', heal: '#00ffaa', bullet: '#ffffff' };
 
-  // --- DUAL JOYSTICK ENGINE ---
+  // --- JOYSTICK ENGINE ---
   const joyL = { active: false, dx: 0, dy: 0, el: document.getElementById('joystick-left'), st: document.getElementById('stick-left') };
   const joyR = { active: false, dx: 0, dy: 0, el: document.getElementById('joystick-right'), st: document.getElementById('stick-right') };
 
@@ -78,12 +80,21 @@
 
   function start() {
     S.started = true; S.over = false; S.score = 0; S.time = 0; S.wave = 1; S.killCount = 0; S.nextBossScore = 1500;
-    player.hp = 100; player.x = VW/2; player.y = VH/2;
+    player.hp = 100; player.x = VW/2; player.y = VH/2; player.angle = -Math.PI/2;
     bullets = []; enemies = []; particles = []; drops = []; bosses = [];
     startScreen.style.display = 'none'; deathScreen.style.display = 'none';
   }
   document.getElementById('startBtn').onclick = start;
   document.getElementById('retryBtn').onclick = start;
+
+  // --- ENEMY DEFINITIONS ---
+  // The 'unlockWave' determines when this enemy starts appearing.
+  const ENEMY_TYPES = {
+    adware:     { unlockWave: 1, baseHP: 30,  baseSpeed: 100, score: 50,  r: 14, color: '#ff4d4d', shape: 'circle' },   // Basic
+    spyware:    { unlockWave: 2, baseHP: 20,  baseSpeed: 260, score: 80,  r: 10, color: '#ffaa00', shape: 'triangle' }, // Fast, Weak
+    ransomware: { unlockWave: 3, baseHP: 150, baseSpeed: 50,  score: 150, r: 20, color: '#a000ff', shape: 'square' },   // Tank, Slow
+    trojan:     { unlockWave: 5, baseHP: 90,  baseSpeed: 180, score: 200, r: 15, color: '#ffffff', shape: 'diamond' }   // Elite
+  };
 
   // --- CORE STEP LOGIC ---
   function step() {
@@ -98,62 +109,83 @@
     player.x = Math.max(18, Math.min(VW-18, player.x));
     player.y = Math.max(18, Math.min(VH-18, player.y));
 
-    // Shooting
+    // Player Aim & Shoot
+    if (joyR.active) player.angle = Math.atan2(joyR.dy, joyR.dx);
+    else if (joyL.active) player.angle = Math.atan2(joyL.dy, joyL.dx);
+    
     player.fireCD -= S.dt;
     if (joyR.active && player.fireCD <= 0) {
-        const ang = Math.atan2(joyR.dy, joyR.dx);
-        bullets.push({ x: player.x, y: player.y, vx: Math.cos(ang)*980, vy: Math.sin(ang)*980, from: 'p', r: 3.5 });
+        const gunDist = 20;
+        const bx = player.x + Math.cos(player.angle) * gunDist;
+        const by = player.y + Math.sin(player.angle) * gunDist;
+        bullets.push({ 
+            x: bx, y: by, 
+            vx: Math.cos(player.angle)*980, vy: Math.sin(player.angle)*980, 
+            from: 'p', r: 4 
+        });
         player.fireCD = player.fireRate;
         S.shake = 2.5;
     }
 
-    // --- MOBILE OPTIMIZED SPAWNING ---
-    // Drastically reduce population on mobile to prevent overcrowding
-    const maxEnemies = isMobile ? (7 + S.wave) : (15 + (S.wave * 4));
-    const spawnChance = isMobile ? 0.04 : 0.09; 
+    // --- ENEMY SPAWNING SYSTEM ---
+    const maxEnemies = isMobile ? (6 + S.wave) : (12 + (S.wave * 3));
+    const spawnChance = isMobile ? 0.03 : 0.08; 
 
     if (enemies.length < maxEnemies && Math.random() < spawnChance) {
+        // 1. Determine Spawn Location
         const edge = Math.random();
         let ex, ey;
         if(edge < 0.25) { ex = Math.random()*VW; ey = -50; } 
         else if(edge < 0.5) { ex = Math.random()*VW; ey = VH+50; }
         else if(edge < 0.75) { ex = -50; ey = Math.random()*VH; }
         else { ex = VW+50; ey = Math.random()*VH; }
-        
-        if(Math.random() > 0.8) {
-            // Rushers: Faster, but fewer HP. Slower on mobile.
-            enemies.push({ x: ex, y: ey, r: 8, hp: 20, speed: isMobile ? 220 : 280, type: 'rusher' }); 
-        } else {
-            // Grunts: Standard enemies.
-            enemies.push({ x: ex, y: ey, r: 15, hp: 40 + (S.wave*25), speed: isMobile ? 90 : 110, type: 'grunt' });
-        }
+
+        // 2. Pick Enemy Type based on Current Wave
+        const availableTypes = Object.entries(ENEMY_TYPES).filter(([k, v]) => S.wave >= v.unlockWave);
+        const selection = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+        const typeName = selection[0];
+        const stats = selection[1];
+
+        // 3. Scale Stats by Wave (Harder every wave)
+        const hpMult = 1 + (S.wave * 0.15);    // +15% HP per wave
+        const spdMult = 1 + (S.wave * 0.05);   // +5% Speed per wave
+
+        enemies.push({ 
+            x: ex, y: ey, 
+            type: typeName,
+            shape: stats.shape,
+            color: stats.color,
+            r: stats.r, 
+            hp: stats.baseHP * hpMult, 
+            maxHP: stats.baseHP * hpMult,
+            speed: isMobile ? stats.baseSpeed * 0.8 : stats.baseSpeed * spdMult,
+            scoreVal: stats.score
+        });
     }
 
     // Boss Manager
     if (S.score >= S.nextBossScore) {
-        bosses.push({ x: Math.random()*VW, y: -100, r: 50, hp: 1500 * S.wave, maxHP: 1500 * S.wave, timer: 0, phase: Math.random()*10 });
-        S.nextBossScore += 2500;
+        // Boss HP scales heavily
+        bosses.push({ x: Math.random()*VW, y: -100, r: 55, hp: 2000 * S.wave, maxHP: 2000 * S.wave, timer: 0, phase: Math.random()*10 });
+        S.nextBossScore += 3000;
         S.flash = 0.5;
-        S.wave++;
+        S.wave++; // Level Up
     }
 
     bosses.forEach((b, bi) => {
-        b.y = Math.min(b.y + S.dt * 80, 140 + (bi * 40));
-        b.x += Math.sin(S.time * 1.5 + b.phase) * 200 * S.dt;
+        b.y = Math.min(b.y + S.dt * 80, 120 + (bi * 40));
+        b.x += Math.sin(S.time * 1.5 + b.phase) * 180 * S.dt;
         b.timer += S.dt;
-        
-        if (b.timer > 1.2) { 
-            // Fewer bullets in the spiral for mobile players
-            const bulletCount = isMobile ? 7 : 12;
+        if (b.timer > 1.4) { 
+            const bulletCount = isMobile ? 8 : 14;
             for(let i=0; i < bulletCount; i++) {
-                const a = (Math.PI*2/bulletCount) * i + (S.time * 2.5);
-                bullets.push({ x: b.x, y: b.y, vx: Math.cos(a)*380, vy: Math.sin(a)*380, from: 'e', r: 7.5 });
+                const a = (Math.PI*2/bulletCount) * i + (S.time * 3);
+                bullets.push({ x: b.x, y: b.y, vx: Math.cos(a)*350, vy: Math.sin(a)*350, from: 'e', r: 8 });
             }
             b.timer = 0;
         }
     });
 
-    // Particles
     particles.forEach((p, i) => {
         p.x += p.vx; p.y += p.vy; p.life -= S.dt * 3;
         if (p.life <= 0) particles.splice(i, 1);
@@ -169,16 +201,16 @@
             if (b.from === 'p' && Math.hypot(e.x - b.x, e.y - b.y) < e.r + b.r) {
                 e.hp -= 40; bullets.splice(bi, 1);
                 if (e.hp <= 0) {
-                    spawnParticles(e.x, e.y, COLORS.neon, 12);
+                    spawnParticles(e.x, e.y, e.color, 12);
                     enemies.splice(ei, 1);
-                    S.score += 100; S.killCount++;
-                    if (S.killCount % 10 === 0) drops.push({x: e.x, y: e.y, type: 'HEAL'});
+                    S.score += e.scoreVal; S.killCount++;
+                    if (S.killCount % 12 === 0) drops.push({x: e.x, y: e.y, type: 'HEAL'});
                 }
             }
         });
 
         if (Math.hypot(e.x - player.x, e.y - player.y) < player.r + e.r) {
-            player.hp -= 50 * S.dt; S.flash = 0.3; S.shake = 12;
+            player.hp -= 40 * S.dt; S.flash = 0.2; S.shake = 10;
         }
     });
 
@@ -187,8 +219,8 @@
             if(bul.from === 'p' && Math.hypot(b.x - bul.x, b.y - bul.y) < b.r) {
                 b.hp -= 40; bullets.splice(bui, 1);
                 if(b.hp <= 0) {
-                    spawnParticles(b.x, b.y, COLORS.neon, 60);
-                    S.score += 2000; bosses.splice(bi, 1);
+                    spawnParticles(b.x, b.y, COLORS.neon, 80);
+                    S.score += 2500; bosses.splice(bi, 1);
                     drops.push({x: b.x, y: b.y, type: 'HEAL'});
                 }
             }
@@ -227,15 +259,13 @@
     
     if (S.shake > 0.5) ctx.translate((Math.random()-0.5)*S.shake, (Math.random()-0.5)*S.shake);
 
+    // Grid
     ctx.strokeStyle = `rgba(255, 0, 60, ${0.07 + Math.sin(S.time*6)*0.03})`;
-    const gridSize = isMobile ? 40 : 60; // Denser grid for mobile looks better
+    const gridSize = isMobile ? 40 : 60;
     for(let i=0; i<VW; i+=gridSize) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,VH); ctx.stroke(); }
     for(let i=0; i<VH; i+=gridSize) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(VW,i); ctx.stroke(); }
 
-    if (S.flash > 0) {
-        ctx.fillStyle = `rgba(255, 0, 60, ${S.flash * 0.4})`;
-        ctx.fillRect(0, 0, VW, VH);
-    }
+    if (S.flash > 0) { ctx.fillStyle = `rgba(255, 0, 60, ${S.flash * 0.4})`; ctx.fillRect(0, 0, VW, VH); }
 
     particles.forEach(p => {
         ctx.globalAlpha = p.life; ctx.fillStyle = p.color;
@@ -249,20 +279,51 @@
         ctx.fillText('✚', d.x-16, d.y+16); ctx.shadowBlur = 0;
     });
 
-    // Objects
-    ctx.fillStyle = COLORS.neon; ctx.shadowBlur = 25; ctx.shadowColor = COLORS.neon;
-    ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); ctx.fill();
-    ctx.shadowBlur = 0;
+    // Draw Player (Security Node)
+    ctx.save();
+    ctx.translate(player.x, player.y);
+    ctx.rotate(player.angle);
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(0, -12, 24, 6); ctx.fillRect(0, 6, 24, 6); // Guns
+    ctx.fillStyle = "#1a1a1a"; ctx.strokeStyle = COLORS.heal; ctx.lineWidth = 3;
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) { const ang = (Math.PI/3)*i; ctx.lineTo(Math.cos(ang)*18, Math.sin(ang)*18); }
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = COLORS.heal; ctx.fillRect(-8, -3, 16, 6); ctx.fillRect(-3, -8, 6, 16); // Cross
+    ctx.rotate(-player.angle + (S.time*2));
+    ctx.strokeStyle = `rgba(0, 255, 170, ${0.3 + Math.sin(S.time*10)*0.2})`; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, 0, 26, 0, Math.PI * 1.5); ctx.stroke();
+    ctx.restore();
 
+    // Draw Enemies (With varied shapes)
     enemies.forEach(e => {
-        ctx.fillStyle = e.type === 'rusher' ? COLORS.bullet : '#2a0003';
-        ctx.strokeStyle = COLORS.neon; ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = e.color; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+        ctx.beginPath();
+        if (e.shape === 'circle') {
+            ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
+        } else if (e.shape === 'triangle') {
+            const r = e.r;
+            // Point the triangle at the player roughly or just up
+            ctx.moveTo(e.x, e.y - r); ctx.lineTo(e.x + r, e.y + r); ctx.lineTo(e.x - r, e.y + r);
+        } else if (e.shape === 'square') {
+            ctx.rect(e.x - e.r, e.y - e.r, e.r*2, e.r*2);
+        } else if (e.shape === 'diamond') {
+            const r = e.r;
+            ctx.moveTo(e.x, e.y - r); ctx.lineTo(e.x + r, e.y); ctx.lineTo(e.x, e.y + r); ctx.lineTo(e.x - r, e.y);
+        }
+        ctx.fill(); ctx.stroke();
     });
 
+    // Draw Boss
     bosses.forEach(b => {
         ctx.fillStyle = '#100001'; ctx.strokeStyle = COLORS.neon; ctx.lineWidth = 5;
         ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        // Skull-like face for boss
+        ctx.fillStyle = COLORS.neon; 
+        ctx.beginPath(); ctx.arc(b.x-20, b.y-10, 8, 0, Math.PI*2); ctx.fill(); // Left Eye
+        ctx.beginPath(); ctx.arc(b.x+20, b.y-10, 8, 0, Math.PI*2); ctx.fill(); // Right Eye
+        ctx.fillRect(b.x-10, b.y+20, 20, 15); // Mouth
+        
+        // HP Bar
         ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(b.x-55, b.y-b.r-25, 110, 8);
         ctx.fillStyle = COLORS.neon; ctx.fillRect(b.x-55, b.y-b.r-25, 110*(b.hp/b.maxHP), 8);
     });
