@@ -207,6 +207,25 @@
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    
+    /* --- WATERMARK --- */
+    .footer-watermark {
+      margin-top: 40px;
+      margin-bottom: 20px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      text-align: center;
+      text-shadow: 0 0 2px rgba(255, 0, 60, 0.3);
+      animation: fadeIn 2s ease-out;
+    }
+    
+    .footer-watermark span {
+        color: var(--accent);
+        font-weight: 700;
+    }
 
     @media (max-width: 500px) {
       .row, .header-row { grid-template-columns: 50px 1fr 90px; padding: 15px; }
@@ -229,6 +248,10 @@
       <div style="text-align: right;">Points</div>
     </div>
     <div id="entries"></div>
+  </div>
+
+  <div class="footer-watermark">
+    Built by <span>Ismail TP</span> — ADIS Student & R&D Member
   </div>
 
   <script type="module">
@@ -324,4 +347,3 @@
   </script>
 </body>
 </html>
-
