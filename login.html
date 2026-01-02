@@ -34,7 +34,6 @@
       overflow: hidden;
     }
 
-    /* Container Box */
     .login-box {
       background: var(--glass);
       backdrop-filter: blur(15px);
@@ -71,10 +70,9 @@
       letter-spacing: 1px;
     }
 
-    /* Input Field */
     .input-container {
       position: relative;
-      margin-bottom: 25px;
+      margin-bottom: 15px;
     }
 
     input {
@@ -96,11 +94,21 @@
       box-shadow: 0 0 15px rgba(255, 0, 60, 0.3);
     }
 
-    input::placeholder {
-      color: rgba(255, 255, 255, 0.2);
+    input.error {
+      border-color: #ffaa00;
+      color: #ffaa00;
     }
 
-    /* Start Button */
+    .status-msg {
+      height: 20px;
+      font-size: 11px;
+      color: #ffaa00;
+      margin-bottom: 15px;
+      font-family: 'Orbitron', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
     .play-btn {
       width: 100%;
       padding: 15px;
@@ -115,16 +123,20 @@
       cursor: pointer;
       transition: all 0.3s;
       box-shadow: 0 0 20px rgba(255, 0, 60, 0.4);
+      position: relative;
     }
 
-    .play-btn:hover {
+    .play-btn:disabled {
+      background: #333;
+      color: #777;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .play-btn:hover:not(:disabled) {
       background: #ff3366;
       box-shadow: 0 0 35px var(--accent);
       transform: translateY(-2px);
-    }
-
-    .play-btn:active {
-      transform: translateY(0);
     }
 
     /* Footer Text */
@@ -140,42 +152,116 @@
 <body>
 
   <div class="login-box">
-    <h2>Access Control</h2>
+    <h2>IDENTITY SELECTION</h2>
     <p>Identify yourself, Defender</p>
 
     <div class="input-container">
-      <input type="text" id="playerName" maxlength="12" placeholder="ID: Defender_1" autocomplete="off">
+      <input type="text" id="playerName" maxlength="12" placeholder="ENTER NAME" autocomplete="off">
     </div>
 
-    <button class="play-btn" onclick="startGame()">Initialize</button>
+    <div id="status" class="status-msg"></div>
+
+    <button id="btnInit" class="play-btn">Initialize</button>
 
     <div class="footer">
       Neural Network Status: Critical
     </div>
   </div>
 
-  <script>
-    function startGame() {
-      const nameInput = document.getElementById("playerName");
-      const name = nameInput.value.trim();
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
+    const firebaseConfig = {
+      apiKey: "AIzaSyA6MdK6DcJVKxm1LkYQ7Ukny8t-ThxcV8k",
+      authDomain: "malwaregame-777.firebaseapp.com",
+      projectId: "malwaregame-777",
+      databaseURL: "https://malwaregame-777-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    
+    const input = document.getElementById("playerName");
+    const btn = document.getElementById("btnInit");
+    const status = document.getElementById("status");
+
+    // Allow clicking button
+    btn.addEventListener("click", attemptLogin);
+
+    // Allow pressing Enter
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") attemptLogin();
+    });
+
+    // Clear errors when typing
+    input.addEventListener("input", () => {
+      input.classList.remove("error");
+      status.textContent = "";
+      btn.disabled = false;
+    });
+
+    async function attemptLogin() {
+      const name = input.value.trim();
+
+      // 1. Basic Validation
       if (name.length < 2) {
-        nameInput.style.borderColor = "red";
-        alert("Identification required (min 2 chars)");
+        showError("ID must be 2+ chars");
         return;
       }
 
-      // Save to localStorage for game use
-      localStorage.setItem("playerName", name);
-      
-      // Redirect to game
-      window.location.href = "index.html";
+      // 2. Lock UI while checking
+      btn.textContent = "CHECKING DATABASE...";
+      btn.disabled = true;
+      status.textContent = "VERIFYING AVAILABILITY...";
+
+      // 3. Check Firebase
+      try {
+        const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, "_"); 
+        const playerRef = ref(db, "scores/" + safeName);
+        const snapshot = await get(playerRef);
+
+        if (snapshot.exists()) {
+          // NAME IS TAKEN
+          const suggested = name + Math.floor(Math.random() * 100);
+          showError("ID ALREADY ACTIVE. TRY: " + suggested);
+          btn.textContent = "Initialize";
+          
+          // Optional: Auto-fill the suggestion?
+          // input.value = suggested; 
+        } else {
+          // NAME IS FREE
+          localStorage.setItem("playerName", name);
+          status.style.color = "#00ffaa";
+          status.textContent = "ACCESS GRANTED";
+          setTimeout(() => {
+            window.location.href = "index.html";
+          }, 500);
+        }
+
+      } catch (e) {
+        console.error(e);
+        showError("CONNECTION ERROR. RETRY.");
+        btn.textContent = "Initialize";
+        btn.disabled = false;
+      }
     }
 
-    // Allow Enter key to submit
-    document.getElementById("playerName").addEventListener("keypress", (e) => {
-      if (e.key === "Enter") startGame();
-    });
+    function showError(msg) {
+      input.classList.add("error");
+      status.style.color = "#ffaa00";
+      status.textContent = msg;
+      btn.disabled = false;
+      btn.textContent = "Initialize";
+      
+      // Shake effect
+      input.animate([
+        { transform: 'translateX(0)' }, 
+        { transform: 'translateX(-5px)' }, 
+        { transform: 'translateX(5px)' }, 
+        { transform: 'translateX(0)' }
+      ], { duration: 200 });
+    }
   </script>
 
 </body>
