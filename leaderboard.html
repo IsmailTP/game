@@ -227,6 +227,44 @@
         font-weight: 700;
     }
 
+    /* --- FULL SCREEN OVERLAY --- */
+    #fullscreen-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #000;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+    
+    #fullscreen-overlay h2 {
+        font-family: 'Orbitron', sans-serif;
+        color: var(--accent);
+        font-size: 24px;
+        letter-spacing: 4px;
+        animation: pulse 1.5s infinite;
+    }
+
+    #fullscreen-overlay p {
+        font-family: 'Inter', sans-serif;
+        color: #888;
+        font-size: 12px;
+        text-transform: uppercase;
+        margin-top: 10px;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 0.5; text-shadow: 0 0 5px var(--accent); }
+        50% { opacity: 1; text-shadow: 0 0 20px var(--accent); }
+        100% { opacity: 0.5; text-shadow: 0 0 5px var(--accent); }
+    }
+
     @media (max-width: 500px) {
       .row, .header-row { grid-template-columns: 50px 1fr 90px; padding: 15px; }
       .name { font-size: 14px; }
@@ -235,6 +273,12 @@
   </style>
 </head>
 <body>
+
+  <!-- Fullscreen Initializer Overlay -->
+  <div id="fullscreen-overlay">
+      <h2>INITIALIZE NEURAL LINK</h2>
+      <p>[ Click anywhere to connect ]</p>
+  </div>
 
   <h1> Leaderboard</h1>
   <div class="subtitle">Global Neural Network Status</div>
@@ -253,6 +297,35 @@
   <div class="footer-watermark">
     Built by <span>Ismail TP</span> — ADIS Student & R&D Member
   </div>
+
+  <!-- Fullscreen Logic Script -->
+  <script>
+    const overlay = document.getElementById('fullscreen-overlay');
+    
+    function activateFullScreen() {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen().catch(err => {
+                console.log(`Error attempting to enable full-screen mode: ${err.message}`);
+            });
+        } else if (elem.mozRequestFullScreen) { /* Firefox */
+            elem.mozRequestFullScreen();
+        } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { /* IE/Edge */
+            elem.msRequestFullscreen();
+        }
+        
+        // Hide the overlay with a fade out effect
+        overlay.style.transition = 'opacity 0.5s';
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 500);
+    }
+
+    overlay.addEventListener('click', activateFullScreen);
+  </script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
