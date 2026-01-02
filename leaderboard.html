@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Global Threat Registry — Leaderboard</title>
+  <title>Global Threat Registry — 1080p TV Edition</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;600&display=swap" rel="stylesheet">
@@ -14,102 +14,120 @@
       --gold: #ffd700;   /* Gold */
       --silver: #c0c0c0; /* Silver */
       --bronze: #cd7f32; /* Bronze */
-      --glass: rgba(20, 0, 5, 0.6);
-      --border: rgba(255, 0, 60, 0.3);
+      --glass: rgba(20, 0, 5, 0.9); /* Darker for better TV contrast */
+      --border: rgba(255, 0, 60, 0.4);
     }
 
     * { box-sizing: border-box; }
     
     body {
       background: var(--bg);
-      /* Cyber-Grid Background */
       background-image: 
-        linear-gradient(rgba(255, 0, 60, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 0, 60, 0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
+        linear-gradient(rgba(255, 0, 60, 0.03) 2px, transparent 2px),
+        linear-gradient(90deg, rgba(255, 0, 60, 0.03) 2px, transparent 2px);
+      background-size: 60px 60px; /* Larger grid for TV */
       color: white;
       font-family: 'Inter', sans-serif;
       margin: 0;
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
+      padding: 0; /* Maximize screen usage */
     }
 
-    /* --- TYPOGRAPHY --- */
+    /* --- TYPOGRAPHY (Scaled for 1080p TV Viewing) --- */
     h1 {
       font-family: 'Orbitron', sans-serif;
-      font-size: clamp(1.5rem, 5vw, 2.5rem);
+      font-size: 5vh; /* Responsive Large Text */
       text-transform: uppercase;
-      letter-spacing: 4px;
-      margin: 40px 0 5px 0;
+      letter-spacing: 6px;
+      margin: 3vh 0 0.5vh 0;
       color: white;
-      text-shadow: 2px 2px 0px var(--accent);
+      text-shadow: 3px 3px 0px var(--accent);
     }
 
     .subtitle {
       color: var(--accent);
       font-family: 'Orbitron', sans-serif;
-      font-size: 12px;
+      font-size: 1.8vh;
       text-transform: uppercase;
-      letter-spacing: 3px;
-      margin-bottom: 40px;
-      opacity: 0.8;
+      letter-spacing: 4px;
+      margin-bottom: 2vh;
+      opacity: 0.9;
     }
 
-    /* --- CONTAINER --- */
+    /* --- CONTAINER (1920x1080 Optimized) --- */
     .board-container {
-      width: 100%;
-      max-width: 600px;
+      width: 90vw; /* 90% Screen Width */
+      height: 80vh; /* 80% Screen Height */
       background: var(--glass);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      border: 1px solid var(--border);
-      box-shadow: 0 0 30px rgba(255, 0, 60, 0.1);
-      border-radius: 4px; 
-      overflow: hidden;
+      border: 2px solid var(--border);
+      box-shadow: 0 0 50px rgba(255, 0, 60, 0.15);
+      border-radius: 8px; 
+      display: flex;
+      flex-direction: column;
       animation: fadeIn 0.8s ease-out;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
+      from { opacity: 0; transform: translateY(30px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* --- TABLE STRUCTURE --- */
+    /* --- HEADER (Sticky & Wide) --- */
     .header-row {
       display: grid;
-      grid-template-columns: 70px 1fr 120px;
-      padding: 15px 25px;
-      background: rgba(255, 0, 60, 0.15);
-      border-bottom: 1px solid var(--border);
+      /* Wider Columns: Rank | Name | Points */
+      grid-template-columns: 120px 1fr 220px;
+      padding: 2vh 3vw;
+      background: rgba(255, 0, 60, 0.2);
+      border-bottom: 2px solid var(--border);
       font-family: 'Orbitron', sans-serif;
-      font-size: 11px;
+      font-size: 2.2vh;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 2px;
       color: var(--accent);
+      flex-shrink: 0;
+      z-index: 2;
     }
 
+    /* --- SCROLLING AREA (Manual Scroll Enabled) --- */
+    #entries-list {
+      flex-grow: 1;
+      overflow-y: auto; /* Manual Scroll */
+      scroll-behavior: smooth;
+    }
+
+    /* Hide Scrollbar for Clean Look */
+    #entries-list::-webkit-scrollbar { display: none; }
+    #entries-list { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* --- ROW STYLING --- */
     .row {
       display: grid;
-      grid-template-columns: 70px 1fr 120px;
+      grid-template-columns: 120px 1fr 220px;
       align-items: center;
-      padding: 15px 25px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      transition: background 0.2s;
-      position: relative;
+      padding: 1.8vh 3vw; /* Taller Rows */
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      transition: background 0.2s, transform 0.2s;
     }
     
-    .row:hover { background: rgba(255, 0, 60, 0.05); }
+    .row:hover { 
+        background: rgba(255, 0, 60, 0.1); 
+        transform: scale(1.005);
+    }
     .row:last-child { border-bottom: none; }
 
-    /* --- DATA COLUMNS --- */
+    /* --- DATA COLUMNS (Big Fonts) --- */
     .rank {
       font-family: 'Orbitron', sans-serif;
       font-weight: 700;
-      font-size: 20px;
-      color: #555;
+      font-size: 3.5vh;
+      color: #777;
     }
 
     .player-info {
@@ -120,16 +138,16 @@
 
     .name {
       font-weight: 600;
-      font-size: 16px;
-      color: #eee;
-      letter-spacing: 0.5px;
+      font-size: 3vh;
+      color: #fff;
+      letter-spacing: 1px;
     }
 
     .threat-title {
-      font-size: 9px;
+      font-size: 1.5vh;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
-      margin-top: 4px;
+      letter-spacing: 2px;
+      margin-top: 0.5vh;
       font-family: 'Orbitron', sans-serif;
     }
 
@@ -138,88 +156,43 @@
       text-align: right;
       color: var(--accent);
       font-weight: 700;
-      font-size: 18px;
+      font-size: 3.5vh;
+      text-shadow: 0 0 10px rgba(255, 0, 60, 0.4);
     }
 
-    /* --- GLITCH ANIMATION KEYFRAMES --- */
-    @keyframes glitch-anim {
-      0% { transform: translate(0); }
-      20% { transform: translate(-2px, 1px); }
-      40% { transform: translate(-1px, -1px); }
-      60% { transform: translate(1px, 1px); }
-      80% { transform: translate(1px, -1px); }
-      100% { transform: translate(0); }
-    }
-
-    /* --- SPECIAL STYLING FOR TOP 3 --- */
+    /* --- SPECIAL STYLING --- */
+    .row:nth-child(1) { border-left: 6px solid var(--gold); background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), transparent); }
+    .row:nth-child(1) .rank, .row:nth-child(1) .score-val { color: var(--gold); }
     
-    /* #1 Gold - Aggressive Glitch */
-    .row:nth-child(1) {
-      background: linear-gradient(90deg, rgba(255, 215, 0, 0.05), transparent);
-      border-left: 3px solid var(--gold);
-    }
-    .row:nth-child(1) .rank { color: var(--gold); font-size: 24px; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
-    .row:nth-child(1) .score-val { color: var(--gold); }
-    .row:nth-child(1) .name {
-        color: #fff;
-        text-shadow: 2px 0 var(--gold), -2px 0 red;
-        animation: glitch-anim 0.25s infinite; /* Fast glitch */
-    }
+    .row:nth-child(2) { border-left: 6px solid var(--silver); }
+    .row:nth-child(2) .rank { color: var(--silver); }
     
-    /* #2 Silver - Medium Glitch */
-    .row:nth-child(2) {
-      border-left: 3px solid var(--silver);
-    }
-    .row:nth-child(2) .rank { color: var(--silver); font-size: 22px; }
-    .row:nth-child(2) .name {
-        color: #fff;
-        text-shadow: 2px 0 var(--silver), -2px 0 blue;
-        animation: glitch-anim 0.4s infinite; /* Medium glitch */
-    }
-
-    /* #3 Bronze - Slow Glitch */
-    .row:nth-child(3) {
-      border-left: 3px solid var(--bronze);
-    }
-    .row:nth-child(3) .rank { color: var(--bronze); font-size: 20px; }
-    .row:nth-child(3) .name {
-        color: #fff;
-        text-shadow: 2px 0 var(--bronze), -2px 0 purple;
-        animation: glitch-anim 0.6s infinite; /* Slow glitch */
-    }
-
-    /* Keep hover glitch for everyone else (Rank 4+) */
-    .row:nth-child(n+4):hover .name {
-      color: #fff;
-      text-shadow: 2px 0 var(--accent), -2px 0 cyan;
-      animation: glitch-anim 0.3s infinite;
-    }
-
+    .row:nth-child(3) { border-left: 6px solid var(--bronze); }
+    .row:nth-child(3) .rank { color: var(--bronze); }
 
     /* --- LOADER --- */
     #loader {
-      margin-top: 60px;
-      width: 40px;
-      height: 40px;
-      border: 2px solid var(--border);
+      margin-top: 10vh;
+      width: 60px;
+      height: 60px;
+      border: 4px solid var(--border);
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     
-    /* --- WATERMARK --- */
+    /* --- FOOTER --- */
     .footer-watermark {
-      margin-top: 40px;
-      margin-bottom: 20px;
+      margin-top: auto;
+      padding-bottom: 2vh;
       font-family: 'Orbitron', sans-serif;
-      font-size: 10px;
+      font-size: 1.5vh;
       color: rgba(255, 255, 255, 0.4);
       text-transform: uppercase;
-      letter-spacing: 1.5px;
+      letter-spacing: 2px;
       text-align: center;
       text-shadow: 0 0 2px rgba(255, 0, 60, 0.3);
-      animation: fadeIn 2s ease-out;
     }
     
     .footer-watermark span {
@@ -246,29 +219,23 @@
     #fullscreen-overlay h2 {
         font-family: 'Orbitron', sans-serif;
         color: var(--accent);
-        font-size: 24px;
-        letter-spacing: 4px;
+        font-size: 5vh;
+        letter-spacing: 8px;
         animation: pulse 1.5s infinite;
+        margin-bottom: 2vh;
     }
 
     #fullscreen-overlay p {
         font-family: 'Inter', sans-serif;
         color: #888;
-        font-size: 12px;
+        font-size: 2vh;
         text-transform: uppercase;
-        margin-top: 10px;
     }
 
     @keyframes pulse {
         0% { opacity: 0.5; text-shadow: 0 0 5px var(--accent); }
         50% { opacity: 1; text-shadow: 0 0 20px var(--accent); }
         100% { opacity: 0.5; text-shadow: 0 0 5px var(--accent); }
-    }
-
-    @media (max-width: 500px) {
-      .row, .header-row { grid-template-columns: 50px 1fr 90px; padding: 15px; }
-      .name { font-size: 14px; }
-      .score-val { font-size: 15px; }
     }
   </style>
 </head>
@@ -277,7 +244,7 @@
   <!-- Fullscreen Initializer Overlay -->
   <div id="fullscreen-overlay">
       <h2>INITIALIZE NEURAL LINK</h2>
-      <p>[ Click anywhere to connect ]</p>
+      <p>[ Click Remote / Touch to Connect ]</p>
   </div>
 
   <h1> Leaderboard</h1>
@@ -291,7 +258,9 @@
       <div>Operative</div>
       <div style="text-align: right;">Points</div>
     </div>
-    <div id="entries"></div>
+    
+    <!-- Manual Scrolling List -->
+    <div id="entries-list"></div>
   </div>
 
   <div class="footer-watermark">
@@ -306,22 +275,20 @@
         const elem = document.documentElement;
         if (elem.requestFullscreen) {
             elem.requestFullscreen().catch(err => {
-                console.log(`Error attempting to enable full-screen mode: ${err.message}`);
+                console.log(`Error: ${err.message}`);
             });
-        } else if (elem.mozRequestFullScreen) { /* Firefox */
-            elem.mozRequestFullScreen();
-        } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+        } else if (elem.webkitRequestFullscreen) { 
             elem.webkitRequestFullscreen();
-        } else if (elem.msRequestFullscreen) { /* IE/Edge */
+        } else if (elem.msRequestFullscreen) {
             elem.msRequestFullscreen();
         }
         
-        // Hide the overlay with a fade out effect
-        overlay.style.transition = 'opacity 0.5s';
+        // Hide the overlay
+        overlay.style.transition = 'opacity 0.6s';
         overlay.style.opacity = '0';
         setTimeout(() => {
             overlay.style.display = 'none';
-        }, 500);
+        }, 600);
     }
 
     overlay.addEventListener('click', activateFullScreen);
@@ -353,9 +320,10 @@
     const db = getDatabase(app);
 
     const scoresRef = ref(db, "scores");
-    const q = query(scoresRef, orderByChild("score"), limitToLast(20));
+    // Limit to 100 players so there is plenty to scroll through on the big screen
+    const q = query(scoresRef, orderByChild("score"), limitToLast(100));
 
-    const entriesDiv = document.getElementById("entries");
+    const entriesDiv = document.getElementById("entries-list");
     const loader = document.getElementById("loader");
     const container = document.getElementById("leaderboard");
 
@@ -366,13 +334,12 @@
       });
 
       list.sort((a, b) => b.score - a.score);
-      const top10 = list.slice(0, 10);
 
       loader.style.display = "none";
-      container.style.display = "block";
+      container.style.display = "flex"; // Flex ensures sticky header works
       entriesDiv.innerHTML = "";
 
-      top10.forEach((p, i) => {
+      list.forEach((p, i) => {
         const row = document.createElement("div");
         row.className = "row";
         
